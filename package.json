@@ -1,0 +1,26 @@
+{
+  "name": "calculatoros",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uellenberg/CalculatorOS.git"
+  },
+  "author": "Jonah Uellenberg",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/uellenberg/CalculatorOS/issues"
+  },
+  "homepage": "https://github.com/uellenberg/CalculatorOS#readme",
+  "dependencies": {
+    "logimat": "^1.0.45"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.3"
+  }
+}
