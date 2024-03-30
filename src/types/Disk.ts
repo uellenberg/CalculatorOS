@@ -7,6 +7,7 @@ export class Disk {
     public files: Record<string, number[]> = {};
     public name: string;
     public size: number;
+    public locked: boolean;
 
     public constructor(name: string, size: number) {
         this.name = name;
