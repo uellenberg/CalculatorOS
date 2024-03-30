@@ -1,4 +1,4 @@
-import {expressionCheck, getString} from "./util";
+import {ensureState, expressionCheck, getString} from "./util";
 import {TemplateState} from "./types/TemplateState";
 import {TemplateObject} from "logimat";
 import {fromManyBytes} from "./types/Float";
@@ -9,6 +9,7 @@ import {fromManyBytes} from "./types/Float";
  */
 export const string: TemplateObject = {
     function: (args, state: TemplateState, context) => {
+        ensureState(state);
         expressionCheck(context);
 
         const value = getString(args, state, 0, "A value is required!").trim().toLowerCase();

@@ -1,0 +1,7 @@
+import templates from "calculatoros";
+
+// TODO: Create background.
+// TODO: Create terminal.
+// TODO: Create keyboard.
+// Create kernel.
+import!("kernel/main.lm");

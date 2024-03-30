@@ -27,7 +27,7 @@ export function fromManyBytes(buffer: number[], readOffset: number) : number[] {
 
     let out = [];
     for(let i = 0; i < numFloats; i++) {
-        out.push(fromBytes, readOffset + i * BYTES_PER_FLOAT);
+        out.push(fromBytes(buffer, readOffset + i * BYTES_PER_FLOAT));
     }
 
     return out;

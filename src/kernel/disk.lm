@@ -1,0 +1,5 @@
+registerDisk!("main", 1024);
+
+addFileString!("main", "/tmp.txt", "This is a test file.");
+
+exportDisk!("main");

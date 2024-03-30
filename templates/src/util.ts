@@ -1,6 +1,10 @@
 import {TemplateArgs, TemplateBlock, TemplateContext} from "logimat";
 import {TemplateState} from "./types/TemplateState";
 
+export const ensureState = (state: TemplateState) => {
+    if (!state.hasOwnProperty("calculatoros")) state.calculatoros = {disks: {}};
+};
+
 //Context checks
 
 export const outerCheck = (context: TemplateContext) : void => {
@@ -82,7 +86,7 @@ export const getNumOrBlock = (args: TemplateArgs, state: TemplateState, idx: num
  * Pads a list to a certain number of elements, appending zeros where needed.
  */
 export function padList<T>(list: T[], length = 10_000) : T[] {
-    const out = Array(10_000).fill(0);
+    const out = Array(length).fill(0);
     for(let i = 0; i < list.length; i++) {
         out[i] = list[i];
     }

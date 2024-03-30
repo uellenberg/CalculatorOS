@@ -1,5 +1,5 @@
 import {TemplateObject} from "logimat";
-import {getBlock, getNum, getString, outerCheck} from "./util";
+import {ensureState, getBlock, getNum, getString, outerCheck} from "./util";
 import {TemplateState} from "./types/TemplateState";
 import {Disk} from "./types/Disk";
 import {fromManyBytes} from "./types/Float";
@@ -10,6 +10,7 @@ import {fromManyBytes} from "./types/Float";
  */
 export const registerDisk: TemplateObject = {
     function: (args, state: TemplateState, context) => {
+        ensureState(state);
         outerCheck(context);
 
         const name = getString(args, state, 0, "A disk name is required!").trim().toLowerCase();
@@ -29,14 +30,15 @@ export const registerDisk: TemplateObject = {
  */
 export const addFileString: TemplateObject = {
     function: (args, state: TemplateState, context) => {
+        ensureState(state);
         outerCheck(context);
 
         const disk = getString(args, state, 0, "A disk name is required!").trim().toLowerCase();
         const name = getString(args, state, 1, "A file name is required!").trim().toLowerCase();
         const data = getString(args, state, 2, "Disk data is required!");
 
-        if(!(name in state.calculatoros.disks)) throw new Error("A disk with the name \"" + name + "\" does not exist!");
-        if(state.calculatoros.disks[disk]) throw new Error("Disk \"" + name + "\" has already been exported!");
+        if(!(disk in state.calculatoros.disks)) throw new Error("A disk with the name \"" + disk + "\" does not exist!");
+        if(state.calculatoros.disks[disk].locked) throw new Error("Disk \"" + disk + "\" has already been exported!");
 
         state.calculatoros.disks[disk].files[name] = fromManyBytes(data.split("").map(char => char.charCodeAt(0)), 0);
 
@@ -51,14 +53,15 @@ export const addFileString: TemplateObject = {
  */
 export const addFileBytes: TemplateObject = {
     function: (args, state: TemplateState, context) => {
+        ensureState(state);
         outerCheck(context);
 
         const disk = getString(args, state, 0, "A disk name is required!").trim().toLowerCase();
         const name = getString(args, state, 1, "A file name is required!").trim().toLowerCase();
         const data = JSON.parse(getBlock(args, state, 2, "Disk data is required!")) as number[];
 
-        if(!(name in state.calculatoros.disks)) throw new Error("A disk with the name \"" + name + "\" does not exist!");
-        if(state.calculatoros.disks[disk]) throw new Error("Disk \"" + name + "\" has already been exported!");
+        if(!(disk in state.calculatoros.disks)) throw new Error("A disk with the name \"" + disk + "\" does not exist!");
+        if(state.calculatoros.disks[disk].locked) throw new Error("Disk \"" + disk + "\" has already been exported!");
 
         state.calculatoros.disks[disk].files[name] = data;
 
@@ -73,6 +76,7 @@ export const addFileBytes: TemplateObject = {
  */
 export const exportDisk: TemplateObject = {
     function: (args, state: TemplateState, context) => {
+        ensureState(state);
         outerCheck(context);
 
         const name = getString(args, state, 0, "A disk name is required!").trim().toLowerCase();
