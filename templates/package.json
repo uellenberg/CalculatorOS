@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/uellenberg/CalculatorOS#readme",
   "dependencies": {
+    "@types/node": "^20.12.2",
     "logimat": "^1.0.45"
   },
   "devDependencies": {

@@ -1,0 +1,43 @@
+define!(ALPHABET, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678<,>.:;\"'{[}]+=_-)(*&^%$#@!~`|\\");
+
+export const d_isplay_buffer = 0;
+export const d_isplay_cursor = 0;
+
+export function c_har_update(c_harcode, d_isplay_arr) {
+    // TODO: Handle backspace character.
+    if(d_isplay_buffer == c_harcode) {
+        let newArr = d_isplay_arr;
+
+        const pos_x = DISPLAY_LEFT_X + DISPLAY_TEXT_SIZE * mod(d_isplay_cursor, DISPLAY_WIDTH);
+        const pos_y = DISPLAY_TOP_Y + DISPLAY_TEXT_SIZE * floor(d_isplay_cursor / DISPLAY_WIDTH);
+        newArr[d_isplay_cursor + 1] = (pos_x, pos_y);
+
+        newArr
+    } else {
+        d_isplay_arr
+    }
+}
+
+forEachChar!(ALPHABET, {
+    // CHAR becomes the character.
+    // CHARCODE becomes the character code (byte).
+
+    display hidden = true;
+    display label = "CHAR";
+    export const d_isplay_CHARCODE = range(1, DISPLAY_WIDTH * DISPLAY_HEIGHT).map(v => (-1000, -1000));
+
+    action d_isplay_CHARCODE_update = d_isplay_CHARCODE {
+        c_har_update(CHARCODE, d_isplay_CHARCODE)
+    }
+});
+
+action r_eset_buffer = d_isplay_buffer {
+    0
+}
+
+action i_ncr_cursor = d_isplay_cursor {
+    // TODO: Handle backspace character here.
+    d_isplay_cursor + (d_isplay_buffer == 0 ? 0 : 1)
+}
+
+forEachChar!(ALPHABET, { d_isplay_CHARCODE_update }, ",", "actions u_pdate_text = ", ";");

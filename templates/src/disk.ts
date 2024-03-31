@@ -34,7 +34,7 @@ export const addFileString: TemplateObject = {
         outerCheck(context);
 
         const disk = getString(args, state, 0, "A disk name is required!").trim().toLowerCase();
-        const name = getString(args, state, 1, "A file name is required!").trim().toLowerCase();
+        const name = getString(args, state, 1, "A file name is required!");
         const data = getString(args, state, 2, "Disk data is required!");
 
         if(!(disk in state.calculatoros.disks)) throw new Error("A disk with the name \"" + disk + "\" does not exist!");
@@ -57,7 +57,7 @@ export const addFileBytes: TemplateObject = {
         outerCheck(context);
 
         const disk = getString(args, state, 0, "A disk name is required!").trim().toLowerCase();
-        const name = getString(args, state, 1, "A file name is required!").trim().toLowerCase();
+        const name = getString(args, state, 1, "A file name is required!");
         const data = JSON.parse(getBlock(args, state, 2, "Disk data is required!")) as number[];
 
         if(!(disk in state.calculatoros.disks)) throw new Error("A disk with the name \"" + disk + "\" does not exist!");
