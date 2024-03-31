@@ -1,5 +1,16 @@
 import templates from "calculatoros";
 
+folder "Main" {
+    actions m_ain =
+        // These need to run first so they can be overridden.
+        // They are for the display.
+        r_eset_buffer,
+        i_ncr_cursor,
+        // This is the code to update the display if a change is requested.
+        u_pdate_text
+    ;
+}
+
 // TODO: Create background.
 // Create terminal.
 import!("display/main.lm");

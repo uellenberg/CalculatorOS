@@ -11,11 +11,9 @@ folder "Display (LAG)" {
         if(d_isplay_buffer == c_harcode) {
             let newArr = d_isplay_arr;
 
-            const pos_x = DISPLAY_LEFT_X + DISPLAY_TEXT_SIZE * mod(d_isplay_cursor, DISPLAY_WIDTH);
-            const pos_y = DISPLAY_TOP_Y + DISPLAY_TEXT_SIZE * floor(d_isplay_cursor / DISPLAY_WIDTH);
-            newArr[d_isplay_cursor + 1] = (pos_x, pos_y);
-
-            newArr
+            const pos_x = DISPLAY_LEFT_X + DISPLAY_TEXT_WIDTH * mod(d_isplay_cursor, DISPLAY_WIDTH);
+            const pos_y = DISPLAY_TOP_Y - DISPLAY_TEXT_HEIGHT * floor(d_isplay_cursor / DISPLAY_WIDTH);
+            join(newArr, (pos_x, pos_y))
         } else {
             d_isplay_arr
         }
@@ -27,7 +25,7 @@ folder "Display (LAG)" {
 
         display hidden = true;
         display label = "CHAR";
-        export const d_isplay_CHARCODE = range(1, DISPLAY_WIDTH * DISPLAY_HEIGHT).map(v => (-1000, -1000));
+        export const d_isplay_CHARCODE = [];
 
         action d_isplay_CHARCODE_update = d_isplay_CHARCODE {
             c_har_update(CHARCODE, d_isplay_CHARCODE)

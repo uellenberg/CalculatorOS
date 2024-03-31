@@ -1,9 +1,10 @@
-inline const DISPLAY_WIDTH = 100;
-inline const DISPLAY_HEIGHT = 60;
+inline const DISPLAY_LEFT_X = -3;
+inline const DISPLAY_TOP_Y = 2;
+inline const DISPLAY_TEXT_WIDTH = 0.3;
+inline const DISPLAY_TEXT_HEIGHT = 0.3;
 
-inline const DISPLAY_LEFT_X = 0;
-inline const DISPLAY_TOP_Y = 5;
-inline const DISPLAY_TEXT_SIZE = 0.1;
+inline const DISPLAY_WIDTH = floor(abs(2 * DISPLAY_LEFT_X) / DISPLAY_TEXT_WIDTH);
+inline const DISPLAY_HEIGHT = floor(abs(2 * DISPLAY_TOP_Y) / DISPLAY_TEXT_HEIGHT);
 
 // Add text to the screen.
 import!("text.lm");
