@@ -1,17 +1,8 @@
 import templates from "calculatoros";
+import templates from "graphgame";
 
+initialize!();
 calculatorInit!();
-
-folder "Main" {
-    actions m_ain =
-        // These need to run first so they can be overridden.
-        // They are for the display.
-        r_eset_buffer,
-        i_ncr_cursor,
-        // This is the code to update the display if a change is requested.
-        u_pdate_text
-    ;
-}
 
 // TODO: Create background.
 // Create terminal.
@@ -19,3 +10,13 @@ import!("display/main.lm");
 // TODO: Create keyboard.
 // Create kernel.
 import!("kernel/main.lm");
+
+// Create a single object for the entire program.
+createObject!({
+    useBehavior!("display");
+    useBehavior!("write_test");
+});
+
+folder "Main" {
+    finalize!();
+}
