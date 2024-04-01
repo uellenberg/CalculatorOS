@@ -5,6 +5,13 @@ import {forEachChar, string} from "./string";
 export const BYTES_PER_FLOAT = 6;
 
 export const templates: TemplatesObject = {
+    calculatorInit: {
+        function() {
+            return `
+                inline const BYTES_PER_FLOAT = 6;
+            `;
+        }
+    },
     registerDisk,
     addFileString,
     addFileBytes,

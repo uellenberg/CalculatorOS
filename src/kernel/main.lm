@@ -1,3 +1,5 @@
 // TODO: Initialize memory.
 // Initialize disks.
 import!("disk.lm");
+// Test writing from the disk to the display.
+import!("write_test.lm");

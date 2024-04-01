@@ -78,13 +78,34 @@ export class Disk {
         // use that size instead.
         const requestedSize = Math.ceil(this.size / BYTES_PER_FLOAT / 10_000);
         const actualSize = Math.ceil(data.length / 10_000);
-        const numDataArrays = Math.max(requestedSize, actualSize);
+        // Make sure there's at least one array.
+        const numDataArrays = Math.max(requestedSize, actualSize, 1);
 
         for(let i = 0; i < numDataArrays; i++) {
             out += `export const d_isk_${this.name}_data_${i} = ${JSON.stringify(padList(data.slice(10_000 * i, 10_000 * (i + 1))))};\n`;
         }
 
-        // TODO: Add functions for interacting with disks.
+        out += `export function d_isk_${this.name}_read(i_ndex) {`;
+        if(numDataArrays === 1) out += `d_isk_${this.name}_data_0[i_ndex]`;
+        else {
+            out += "const a_rray_num = floor(i_ndex / 10000);";
+
+            for(let i = 0; i < numDataArrays; i++) {
+                if(i === 0) {
+                    out += `if(a_rray_num == ${i}) { d_isk_${this.name}_data_${i}[i_ndex] }`;
+                } else if(i === numDataArrays - 1) {
+                    out += `else { d_isk_${this.name}_data_${i}[i_ndex] }`;
+                } else {
+                    out += `else if(a_rray_num == ${i}) { d_isk_${this.name}_data_${i}[i_ndex] }`;
+                }
+            }
+        }
+        out += "}";
+
+        out += `inline const DISK_${this.name}_HEADER_NAME_SIZE = ${HEADER_NAME_SIZE};`;
+        out += `inline const DISK_${this.name}_HEADER_BLOCKS_SIZE = ${HEADER_BLOCKS_SIZE};`;
+        out += `inline const DISK_${this.name}_HEADER_SIZE = ${HEADER_SIZE};`;
+        out += `inline const DISK_${this.name}_BLOCK_SIZE = ${BLOCK_SIZE};`;
 
         return out;
     }

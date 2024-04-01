@@ -1,0 +1,40 @@
+// The stack frame is slightly offset in order to create a piece of empty
+// space at w_rite_test_buffer[3].
+// This space is managed by us directly, not the runtime, so we can just access
+// it as *(3).
+export const w_rite_test_buffer = [stackid(r_un_test),4,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
+stackfunction r_un_test() {
+    stackvar i;
+    i = 0;
+    const num_headers = floor(10000 / DISK_main_HEADER_SIZE);
+
+    while(i < num_headers) {
+        if (d_isk_main_header[i * DISK_main_HEADER_SIZE]) {
+            // We found one.
+            break;
+        }
+
+        i = i + 1;
+    }
+
+    stackvar j;
+    j = 0;
+
+    const name_start = i * DISK_main_HEADER_SIZE + 1;
+
+    while(d_isk_main_header[name_start + j] != 0) {
+        // If there's an item in our output space that hasn't been
+        // read yet, keep waiting until it has been.
+        if(stack[3] != 0) {
+            continue;
+        }
+
+        stack[3] = d_isk_main_header[name_start + j];
+        j = j + 1;
+    }
+}
+
+action w_rite_test_buffer {
+    r_unstack(w_rite_test_buffer)
+}
