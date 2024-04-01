@@ -1,13 +1,17 @@
 createBehavior!("write_test", {
+    setDefaultDisplay!({ display folder = "Write Test"; });
+
     // The stack frame is slightly offset in order to create a piece of empty
     // space at w_rite_test_buffer[3].
     // This space is managed by us directly, not the runtime, so we can just access
     // it as *(3).
+    setItemName!("w_rite_test_buffer");
     setVal!("write_test_buffer", { [stackid(r_un_test),4,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0] });
     setValAction!("write_test_buffer", {
         r_unstack(write_test_buffer)
     });
 
+    setItemName!("b_yte_read_pos");
     setVal!("byte_read_pos", 0);
 
     // Clear if there's data and we're past the
@@ -49,6 +53,7 @@ createBehavior!("write_test", {
     }, 5);
 });
 
+display folder = "Run Test";
 stackfunction r_un_test() {
     stackvar i;
     i = 0;

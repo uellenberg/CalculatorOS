@@ -1,75 +1,78 @@
 createBehavior!("display", {
-    folder "Display" {
-        setVal!("display_buffer", 0);
-        setVal!("display_cursor", 0);
+    setDefaultDisplay!({ display folder = "Display"; });
 
-        // Reset the buffer at the start of each frame.
-        setValAction!("display_buffer", {
-            0
-        }, -500);
+    setItemName!("d_isplay_buffer");
+    setVal!("display_buffer", 0);
 
-        // Moves the cursor if there's text
-        // in the buffer
-        setValAction!("display_cursor", {
-            if(getVal!("display_buffer") != 0) {
-                display_cursor + 1
+    setItemName!("d_isplay_cursor");
+    setVal!("display_cursor", 0);
+
+    // Reset the buffer at the start of each frame.
+    setValAction!("display_buffer", {
+        0
+    }, -500);
+
+    // Moves the cursor if there's text
+    // in the buffer.
+    setValAction!("display_cursor", {
+        if(getVal!("display_buffer") != 0) {
+            display_cursor + 1
+        } else {
+            display_cursor
+        }
+    }, 500);
+
+    helper!({
+        display folder = "Display";
+        export function c_har_update(c_harcode, d_isplay_arr) {
+            const display_buffer = {
+                state = 0;
+
+                selectBehavior!("display", {
+                    state = getValSelect!("display.display_buffer");
+                });
+            };
+
+            const display_cursor = {
+                state = 0;
+
+                selectBehavior!("display", {
+                    state = getValSelect!("display.display_cursor");
+                });
+            };
+
+            // TODO: Handle backspace character.
+            if(display_buffer == c_harcode) {
+                let newArr = d_isplay_arr;
+
+                const pos_x = DISPLAY_LEFT_X + DISPLAY_TEXT_WIDTH * mod(display_cursor, DISPLAY_WIDTH);
+                const pos_y = DISPLAY_TOP_Y - DISPLAY_TEXT_HEIGHT * floor(display_cursor / DISPLAY_WIDTH);
+                join(newArr, (pos_x, pos_y))
             } else {
-                display_cursor
+                d_isplay_arr
             }
-        }, 500);
-
-        define!(ALPHABET, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678<,>.:;\"'{[}]+=_-)(*&^%$#@!~`|\\");
-
-        helper!({
-            export function c_har_update(c_harcode, d_isplay_arr) {
-                const display_buffer = {
-                    state = 0;
-
-                    selectBehavior!("display", {
-                        state = getValSelect!("display.display_buffer");
-                    });
-                };
-
-                const display_cursor = {
-                    state = 0;
-
-                    selectBehavior!("display", {
-                        state = getValSelect!("display.display_cursor");
-                    });
-                };
-
-                // TODO: Handle backspace character.
-                if(display_buffer == c_harcode) {
-                    let newArr = d_isplay_arr;
-
-                    const pos_x = DISPLAY_LEFT_X + DISPLAY_TEXT_WIDTH * mod(display_cursor, DISPLAY_WIDTH);
-                    const pos_y = DISPLAY_TOP_Y - DISPLAY_TEXT_HEIGHT * floor(display_cursor / DISPLAY_WIDTH);
-                    join(newArr, (pos_x, pos_y))
-                } else {
-                    d_isplay_arr
-                }
-            }
-        }, 500);
-    }
+        }
+    }, 500);
 });
+
+define!(ALPHABET, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678<,>.:;\"'{[}]+=_-)(*&^%$#@!~`|\\");
 
 forEachChar!(ALPHABET, {
     // CHAR becomes the character.
     // CHARCODE becomes the character code (byte).
 
     extendBehavior!("display", {
-        folder "Display (LAG)" {
-            setVal!("display_CHARCODE", { [] });
+        setItemName!("d_isplay_CHARCODE");
+        setItemDisplay!({
+            display folder = "Display (LAG)";
+            display hidden = true;
+            display label = "CHAR";
+        });
+        setVal!("display_CHARCODE", { [] });
 
-            setValAction!("display_CHARCODE", {
-                c_har_update(CHARCODE, display_CHARCODE)
-            }, 500);
-
-            behaviorCustom!({
-                display hidden = true;
-                display label = "CHAR";
-                export const c_har_CHARCODE = getVal!("display_CHARCODE");
-            });
-        }
+        setItemDisplay!({ display folder = "Display (LAG)"; });
+        setValAction!("display_CHARCODE", {
+            c_har_update(CHARCODE, display_CHARCODE)
+        }, 500);
     });
 });

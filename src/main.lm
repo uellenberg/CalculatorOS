@@ -4,6 +4,10 @@ import templates from "graphgame";
 initialize!();
 calculatorInit!();
 
+setGlobalDefaultDisplay!({
+    display folder = "Update Actions";
+});
+
 // TODO: Create background.
 // Create terminal.
 import!("display/main.lm");
@@ -17,6 +21,4 @@ createObject!({
     useBehavior!("write_test");
 });
 
-folder "Main" {
-    finalize!();
-}
+finalize!();
