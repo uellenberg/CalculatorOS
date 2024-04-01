@@ -53,7 +53,7 @@ createBehavior!("write_test", {
     }, 5);
 });
 
-display folder = "Run Test";
+display folder = "Write Test";
 stackfunction r_un_test() {
     stackvar i;
     i = 0;
