@@ -37,7 +37,7 @@ export class Disk {
         const data = [];
         const occupiedIDs = [];
 
-        let nextBlockID = 0;
+        let nextBlockID = 1;
 
         for(const fileName in this.files) {
             const bytes = this.files[fileName];

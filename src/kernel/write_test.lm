@@ -6,7 +6,7 @@ createBehavior!("write_test", {
     // This space is managed by us directly, not the runtime, so we can just access
     // it as *(3).
     setItemName!("w_rite_test_buffer");
-    setVal!("write_test_buffer", { [stackid(r_un_test),4,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0] });
+    setVal!("write_test_buffer", { [stackid(r_un_test),4,0,-1,4,0,0,0,0,0,0,0,0,0,0,0,0] });
     setValAction!("write_test_buffer", {
         r_unstack(write_test_buffer)
     });
@@ -67,28 +67,74 @@ stackfunction r_un_test() {
 
         i = i + 1;
     }*/
-    while(i < num_headers && d_isk_main_header[i * DISK_main_HEADER_SIZE] == 0) {
+    while(i < num_headers && d_isk_main_header[1 + i * DISK_main_HEADER_SIZE] == 0) {
         i = i + 1;
     }
 
     stackvar j;
     j = 0;
 
-    const name_start = i * DISK_main_HEADER_SIZE + 1;
+    // Offset by the isActive byte, as well as
+    // by Desmos' starting list index.
+    const nameStart = 1 + i * DISK_main_HEADER_SIZE + 1;
 
-    while(d_isk_main_header[name_start + j] != 0) {
+    while(d_isk_main_header[nameStart + j] != 0 && j < DISK_main_HEADER_NAME_SIZE) {
         // If there's an item in our output space that hasn't been
         // read yet, keep waiting until it has been.
         if(stack[3] == 0) {
-            stack[3] = d_isk_main_header[name_start + j];
+            stack[3] = d_isk_main_header[nameStart + j];
             j = j + 1;
         }
+    }
+
+    // Now, read each block for data and output it.
+    j = 0;
+
+    while(stack[3] != 0) { const a = 1; }
+
+    // Offset by the isActive byte, as well as
+    // by Desmos' starting list index.
+    const blocksStart = 1 + i * DISK_main_HEADER_SIZE + 1 + DISK_main_HEADER_NAME_SIZE;
+    while(d_isk_main_header[blocksStart + j] != 0 && j < DISK_main_HEADER_BLOCKS_SIZE) {
+        const blockLocation = d_isk_main_header[blocksStart + j];
+
+        // Each block is 2-bytes.
+        stackvar byteIdx;
+        byteIdx = 0;
+        while(byteIdx < (BYTES_PER_FLOAT / 2) && getTwoByte(blockLocation, byteIdx) != 0) {
+            // blockIndex starts at 1 already, so we don't need to offset it.
+            const blockIndex = getTwoByte(blockLocation, byteIdx);
+            stackvar k;
+            k = 0;
+            while(d_isk_main_read(blockIndex + k) != 0) {
+                // If there's an item in our output space that hasn't been
+                // read yet, keep waiting until it has been.
+                if(stack[3] == 0) {
+                    stack[3] = d_isk_main_read(blockIndex + k);
+                    k = k + 1;
+                }
+            }
+
+            byteIdx = byteIdx + 1;
+        }
+
+        j = j + 1;
     }
 }
 
 inline function getByte(a, b) {
     const base = 256;
     const len = BYTES_PER_FLOAT;
+
+    const pt1 = a/base^(len-b-1);
+    const pt2 = a/base^(len-b);
+
+    floor(pt1-floor(pt2)*base)
+}
+
+inline function getTwoByte(a, b) {
+    const base = 256*256;
+    const len = BYTES_PER_FLOAT / 2;
 
     const pt1 = a/base^(len-b-1);
     const pt2 = a/base^(len-b);
