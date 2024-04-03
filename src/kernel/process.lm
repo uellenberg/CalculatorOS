@@ -117,8 +117,8 @@ createBehavior!("processManager", {
 
             selectBehavior!("process", {
                 if(p_id == getValSelect!("process.processID")) {
-                    state = getValSelect!("process.stack");
-                }
+                    getValSelect!("process.stack")
+                } else { state }
             });
         }
     }, 99);
@@ -130,10 +130,7 @@ createBehavior!("process", {
     setVal!("stack", { DEFAULT_PROCESS_STACK });
     setMut!("stack");
 
-    // This is the last item, so it needs to increment the process_idx counter.
-    setItemDisplay!({ define!(PROCESS_IDX, PROCESS_IDX + 1); });
-    // This needs to be moved back by one due to the above code.
-    setVal!("processID", { get!(PROCESS_IDX) - 1 });
+    setVal!("processID", { get!(PROCESS_IDX) });
     setMut!("processID");
 
     // First, we should take over the process mentioned in the process manager
@@ -146,7 +143,9 @@ createBehavior!("process", {
     setInline!("shouldAcquireProcess");
 
     setValAction!("shouldAcquireProcess", {
-        const inactiveProcesses = selectBehavior!("processManager", { getValSelect!("processManager.inactiveProcesses") });
+        const inactiveProcesses = {
+            selectBehavior!("processManager", { state = getValSelect!("processManager.inactiveProcesses"); });
+        };
 
         // This is inside of an if to prevent undefined from messing things up.
         if(inactiveProcesses.length != 0) {
@@ -158,7 +157,11 @@ createBehavior!("process", {
 
     setValAction!("stack", {
         if(getVal!("shouldAcquireProcess")) {
-            selectBehavior!("processManager", { getValSelect!("processManager.nextProcessStack") })
+            const newStack = {
+                selectBehavior!("processManager", { state = getValSelect!("processManager.nextProcessStack"); });
+            };
+
+            newStack
         } else {
             stack
         }
@@ -166,19 +169,29 @@ createBehavior!("process", {
 
     setValAction!("processID", {
         if(getVal!("shouldAcquireProcess")) {
-            selectBehavior!("processManager", { getValSelect!("processManager.nextProcessID") })
+            const newPID = {
+                selectBehavior!("processManager", { state = getValSelect!("processManager.nextProcessID"); });
+            };
+
+            newPID
         } else {
             processID
         }
     }, 411);
 
-    // Now, run the process if we're the selected one and there isn't a syscall running.
+    // This is the last item, so it needs to increment the process_idx counter.
+    setItemDisplay!({ define!(PROCESS_IDX, PROCESS_IDX + 1); });
+        // Now, run the process if we're the selected one and there isn't a syscall running.
     // If we are the selected one, and there isn't a syscall running, but there is
     // syscall data, that means that the sycall just ended and we should clear the sycall data.
     setValAction!("stack", {
-        const chosenProcess = selectBehavior!("mainLoop", { getValSelect!("mainLoop.activeProcessID") });
+        const chosenProcess = {
+            selectBehavior!("mainLoop", { state = getValSelect!("mainLoop.activeProcessID"); });
+        };
         if(chosenProcess == getVal!("processID")) {
-            const handlingSyscall = selectBehavior!("syscall", { getValSelect!("syscall.handlingSyscall") });
+            const handlingSyscall = {
+                selectBehavior!("syscall", { state = getValSelect!("syscall.handlingSyscall"); });
+            };
             if(handlingSyscall) {
                 stack
             } else {
@@ -191,8 +204,9 @@ createBehavior!("process", {
 
     helper!({
         // Clears all syscall data in a stack.
+        display folder = "Process Manager";
         export function c_lear_syscall(s_tack) {
-            const newStack = s_tack;
+            let newStack = s_tack;
             // Clear values stack[3] to stack[3 + LENGTH - 1].
             define!(STACK_IDX, 3);
             iterate!({
@@ -201,7 +215,7 @@ createBehavior!("process", {
                 define!(STACK_IDX, STACK_IDX + 1);
             }, STACK_LENGTH);
 
-            stack
+            newStack
         }
     });
 });

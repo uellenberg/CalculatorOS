@@ -14,6 +14,7 @@
 // - Read last program for syscalls: 200
 // - Execute drivers: 300
 // - Run programs: 400
+// - Update display: 500
 // TODO: Implement clock.
 
 // Handle syscalls.
@@ -25,15 +26,19 @@ createBehavior!("mainLoop", {
     setVal!("activeProcessID", 1);
 
     // Run right before process handling happens (it happens at 410).
-    setValSelect!("activeProcessID", {
+    setValAction!("activeProcessID", {
         // If we aren't actively handling a syscall, then randomize
         // the process ID to one in the active process list.
-        const handlingSyscall = selectBehavior!("syscall", { setValSelect!("syscall.handlingSyscall") });
+        const handlingSyscall = {
+            selectBehavior!("syscall", { state = getValSelect!("syscall.handlingSyscall"); });
+        };
 
         if(handlingSyscall) {
             activeProcessID
         } else {
-            const activeProcesses = selectBehavior!("process", { setValSelect!("process.activeProcesses") });
+            const activeProcesses = {
+                selectBehavior!("processManager", { state = getValSelect!("processManager.activeProcesses"); });
+            };
             activeProcesses[random() * activeProcesses.length + 1]
         }
     }, 409);

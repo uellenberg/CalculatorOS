@@ -40,18 +40,22 @@ createBehavior!("syscall", {
 
     // Write to the display buffer if there's data and we're at a valid position.
     setValAction!("base.display.display_buffer", {
-        const activeProcessID = selectBehavior!("mainLoop", { getValSelect!("mainLoop.activeProcessID") });
+        const activeProcessID = {
+            selectBehavior!("mainLoop", { state = getValSelect!("mainLoop.activeProcessID"); });
+        };
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         if(activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0) {
-            getByte(display_buffer
+            display_buffer
         } else {
             getByte(activeProcessStack[4], getVal!("byteReadPos"))
         }
     }, 110);
 
     setValAction!("byteReadPos", {
-        const activeProcessID = selectBehavior!("mainLoop", { getValSelect!("mainLoop.activeProcessID") });
+        const activeProcessID = {
+            selectBehavior!("mainLoop", { state = getValSelect!("mainLoop.activeProcessID"); });
+        };
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         // Increment if there's data.
@@ -65,10 +69,12 @@ createBehavior!("syscall", {
     setValAction!("printSyscallActive", {
         // If we're in a print syscall and we haven't read everything (byteReadPos < BYTES_PER_FLOAT),
         // then we're still doing the sycall.
-        const activeProcessID = selectBehavior!("mainLoop", { getValSelect!("mainLoop.activeProcessID") });
+        const activeProcessID = {
+            selectBehavior!("mainLoop", { state = getValSelect!("mainLoop.activeProcessID"); });
+        };
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
-        activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0 && byteReadPos < BYTES_PER_FLOAT
+        activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0 && getVal!("byteReadPos") < BYTES_PER_FLOAT
     }, 120);
 
     setValAction!("handlingSyscall", {

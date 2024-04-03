@@ -7,6 +7,8 @@ export const p_rograms = [stackid(r_un_test)];
 
 display folder = "Programs";
 action r_un_test_program = n_ext_process_stack {
-    const newStack = DEFAULT_PROCESS_STACK;
-    newStack[1] = p_rograms[1]
-};
+    let newStack = DEFAULT_PROCESS_STACK;
+    newStack[1] = p_rograms[1];
+
+    newStack
+}
