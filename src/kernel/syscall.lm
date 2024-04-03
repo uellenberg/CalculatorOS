@@ -1,0 +1,77 @@
+// This file contains every syscall.
+// Syscalls are composed out of a stack function (optionally) and
+// actions to glue everything together.
+// They read data in from the empty space inside of a process' stack.
+// That empty space is the 10 float section beginning at stack[3] and ending
+// at stack[3 + LENGTH - 1].
+//
+// Syscall priority is 100.
+//
+// Priorities are arranged as follows:
+// - Data resetting: 100
+// - Syscall handling: 110
+// - Syscall cleanup: 120
+// - Set handlingSyscall: 130
+
+inline const PRINT_SYSCALL_ID = 4;
+
+createBehavior!("syscall", {
+    setDefaultDisplay!({ display folder = "Syscalls"; });
+
+    setItemName!("h_anding_syscall");
+    setVal!("handlingSyscall", 0);
+
+    // Print syscall.
+    setItemName!("b_yte_read_pos");
+    setVal!("byteReadPos", 0);
+
+    setItemName!("p_rint_syscall_active");
+    setVal!("printSyscallActive", 0);
+    setInline!("printSyscallActive");
+
+    // Reset everything if we aren't currently handling a syscall.
+    setValAction!("byteReadPos", {
+        if(getVal!("handlingSyscall")) {
+            byteReadPos
+        } else {
+            0
+        }
+    }, 100);
+
+    // Write to the display buffer if there's data and we're at a valid position.
+    setValAction!("base.display.display_buffer", {
+        const activeProcessID = selectBehavior!("mainLoop", { getValSelect!("mainLoop.activeProcessID") });
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0) {
+            getByte(display_buffer
+        } else {
+            getByte(activeProcessStack[4], getVal!("byteReadPos"))
+        }
+    }, 110);
+
+    setValAction!("byteReadPos", {
+        const activeProcessID = selectBehavior!("mainLoop", { getValSelect!("mainLoop.activeProcessID") });
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        // Increment if there's data.
+        if(activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0) {
+            byteReadPos + 1
+        } else {
+            byteReadPos
+        }
+    }, 111);
+
+    setValAction!("printSyscallActive", {
+        // If we're in a print syscall and we haven't read everything (byteReadPos < BYTES_PER_FLOAT),
+        // then we're still doing the sycall.
+        const activeProcessID = selectBehavior!("mainLoop", { getValSelect!("mainLoop.activeProcessID") });
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0 && byteReadPos < BYTES_PER_FLOAT
+    }, 120);
+
+    setValAction!("handlingSyscall", {
+        getVal!("printSyscallActive")
+    }, 130);
+});

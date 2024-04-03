@@ -54,41 +54,41 @@ The kernel will boot up by initializing its main loop, which as much as possible
 
 ## System Call Interface
 
-A process can perform a system call by setting its stack number to a negative number. Each number represents a different system call. A system call requires data to be written to the end of the stack: the last value should be the stack number, and any numbers before that will be the data given to the syscall. This data needs to be specified in reverse order, so the byte before the stack number will be the first byte, the one before it will be the second, and so on. Below is a list of the different syscalls, and the data they require.
+A process can perform a system call by setting the first number in its allocated syscall space to the system call number. Each number represents a different system call. A system call requires data to be written to the empty space designated for syscalls. Below is a list of the different syscalls, and the data they require.
 
-• -1 — Exit. Ignores the stack number. Requires an exit code in the first byte, which will be given to the parent process (if it exists).
+• 1 — Exit. Ignores the stack number. Requires an exit code in the first byte, which will be given to the parent process (if it exists).
 
-• -2 — Shutdown. Puts the system into shutdown mode, sending a SIGEND to all processes. After 2 seconds (arbitrary), sends a SIGKILL, then tells the power simulator to shut the system down.
+• 2 — Shutdown. Puts the system into shutdown mode, sending a SIGEND to all processes. After 2 seconds (arbitrary), sends a SIGKILL, then tells the power simulator to shut the system down.
 
-• -3 — Reboot. Tells the power simulator to reboot after a shutdown. Puts the system into shutdown mode.
+• 3 — Reboot. Tells the power simulator to reboot after a shutdown. Puts the system into shutdown mode.
 
-• -4 — Print. The first byte should be the number of bytes to print, and subsequent bytes will be the bytes which will be printed. These bytes will be appended to the terminal simulator's buffer.
+• 4 — Print. The first number (bytes encoded into a float) will be printed to the terminal. Additional numbers will be ignored.
 
-• -5 — Memory Alloc. The first number should be the length (in bytes) to allocate, and the next should be the stack pointer. If the allocation is successful, then the stack pointer will be set to the memory index of that allocation. Otherwise, the pointer will be set to 0.
+• 5 — Memory Alloc. The first number should be the length (in bytes) to allocate, and the next should be the stack pointer. If the allocation is successful, then the stack pointer will be set to the memory index of that allocation. Otherwise, the pointer will be set to 0.
 
-• -6 — Memory Write. The first number should be the memory index. The second should be the byte which will be written to that memory address.
+• 6 — Memory Write. The first number should be the memory index. The second should be the byte which will be written to that memory address.
 
-• -7 — Memory Read. The first number should be a memory index. The second should be a stack pointer. The byte stored at this index will be placed into the stack pointer.
+• (virtual) Memory Read.
 
-• -8 — Memory Clear. The first number should be the memory index. This will clear the allocated memory at that index, allowing it to be re-used.
+• 8 — Memory Clear. The first number should be the memory index. This will clear the allocated memory at that index, allowing it to be re-used.
 
-• -9 — File Write. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. The next number will be the byte index to write to. Finally, the next number will be the byte to write into the file. This will write the data to a file (creating it if it doesn't exist, and re-allocating it if it exceeds the file's allocation).
+• 9 — File Write. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. The next number will be the byte index to write to. Finally, the next number will be the byte to write into the file. This will write the data to a file (creating it if it doesn't exist, and re-allocating it if it exceeds the file's allocation).
 
-• -10 — File Read. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. The number after will the byte index to read from. The number after that will be a stack pointer to where the file's byte at that index should be written to. If the file exists (and the index is valid), then that stack pointer will hold the value at the specified index. Otherwise, it will hold -1.
+• (virtual) File Read.
 
-• -11 — File Delete. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. If the file exists, it will be deleted.
+• 11 — File Delete. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. If the file exists, it will be deleted.
 
-• -12 — Cur Process ID. The first number should be a stack index. The index of the process will be placed into that stack index.
+• (virtual) Cur Process ID.
 
-• -13 — Process Argument. The first number should be the process ID. The second will be the argument index (0 is the process' name). The third will be the byte index to read from for that specific argument. The fourth should be a stack pointer. If all the IDs and indices are valid, then the byte will be read into the stack pointer, otherwise the stack pointer will contain -1.
+• (virtual) Process Argument.
 
-• -14 — Read stdin. The first number should be the process index. The second number should be a stack pointer. If there is a byte in the first element of the process' stdin (and it exists), then it will be removed and placed into the stack pointer. Otherwise, -1 will be placed into it.
+• (virtual) Read stdin.
 
-• -15 — Read stdout. The first number should be the process index. The second number should be a stack pointer. If there is a byte in the first element of the process' stdout (and it exists), then it will be removed and placed into the stack pointer. Otherwise, -1 will be placed into it.
+• (virtual) Read stdout.
 
-• -16 — Write stdin. The first number should be the process index. The second should be the byte to write. That byte will be added to the end of the process' stdin.
+• 16 — Write stdin. The first number should be the process index. The second should be the byte to write. That byte will be added to the end of the process' stdin.
 
-• -17 — Start process. The first number should be the length (in bytes) of the process' location (as an absolute path), and the subsequent ones will be the the bytes containing that path. The number after this will be a stack pointer. If the process is executed successfully (its file exists), the the new process ID will be placed into the stack pointer. Otherwise, the stack pointer will read -1.
+• 17 — Start process. The first number should be the length (in bytes) of the process' location (as an absolute path), and the subsequent ones will be the the bytes containing that path. The number after this will be a stack pointer. If the process is executed successfully (its file exists), the the new process ID will be placed into the stack pointer. Otherwise, the stack pointer will read -1.
 
 Syscalls are implemented as actions that update certain pieces of data depending on whether the syscall is requested. This means that the code for syscalls will be spread across multiple different actions.
 

@@ -8,11 +8,15 @@ setGlobalDefaultDisplay!({
     display folder = "Update Actions";
 });
 
+// Import utility functions.
+import!("util.lm");
 // Import global color constants.
 import!("colors.lm");
 // TODO: Create background.
 // Create terminal.
 import!("display/main.lm");
+// Create programs.
+import!("programs/main.lm");
 // TODO: Create keyboard.
 // Create kernel.
 import!("kernel/main.lm");
@@ -20,7 +24,9 @@ import!("kernel/main.lm");
 // Create a single object for the entire program.
 createObject!({
     useBehavior!("display");
-    useBehavior!("write_test");
+    useBehavior!("processManager");
+    useBehavior!("syscall");
+    useBehavior!("mainLoop");
 });
 
 finalize!();

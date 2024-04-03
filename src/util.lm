@@ -1,0 +1,19 @@
+inline function getByte(a, b) {
+    const base = 256;
+    const len = BYTES_PER_FLOAT;
+
+    const pt1 = a/base^(len-b-1);
+    const pt2 = a/base^(len-b);
+
+    floor(pt1-floor(pt2)*base)
+}
+
+inline function getTwoByte(a, b) {
+    const base = 256*256;
+    const len = BYTES_PER_FLOAT / 2;
+
+    const pt1 = a/base^(len-b-1);
+    const pt2 = a/base^(len-b);
+
+    floor(pt1-floor(pt2)*base)
+}

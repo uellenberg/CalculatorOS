@@ -1,0 +1,40 @@
+// This is the main kernel loop.
+// Each time the loop runs, the kernel does the following things:
+// - Updates the system clock.
+// - If there's a systemcall running, continue its execution and restart the loop.
+//   This is handled in the syscall.lm file.
+// - If the last program executed has requested a system call, then
+//   trigger it and restart the loop.
+// - Executes drivers. This is handled in their individual driver files (inside the drivers folder).
+// - Selects a program to execute based on the program type counter and a random value.
+//
+// These steps happen at the following priority levels:
+// - Update clock: 0
+// - Syscall handling: 100
+// - Read last program for syscalls: 200
+// - Execute drivers: 300
+// - Run programs: 400
+// TODO: Implement clock.
+
+// Handle syscalls.
+import!("syscall.lm");
+// Handle programs.
+import!("process.lm");
+
+createBehavior!("mainLoop", {
+    setVal!("activeProcessID", 1);
+
+    // Run right before process handling happens (it happens at 410).
+    setValSelect!("activeProcessID", {
+        // If we aren't actively handling a syscall, then randomize
+        // the process ID to one in the active process list.
+        const handlingSyscall = selectBehavior!("syscall", { setValSelect!("syscall.handlingSyscall") });
+
+        if(handlingSyscall) {
+            activeProcessID
+        } else {
+            const activeProcesses = selectBehavior!("process", { setValSelect!("process.activeProcesses") });
+            activeProcesses[random() * activeProcesses.length + 1]
+        }
+    }, 409);
+});
