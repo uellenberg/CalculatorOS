@@ -37,6 +37,8 @@ export class Disk {
         const data = [];
         const occupiedIDs = [];
 
+        // Block IDs start at 1 so that we can use 0 to indicate
+        // no block.
         let nextBlockID = 1;
 
         for(const fileName in this.files) {
@@ -71,8 +73,8 @@ export class Disk {
         // in Desmos, but they need to be split and formatted.
         let out = "";
 
-        out += `export const d_isk_${this.name}_header = ${JSON.stringify(padList(table))};\n`;
-        out += `export const d_isk_${this.name}_ids = ${JSON.stringify(padList(occupiedIDs))};\n`;
+        out += `export const d_isk_${this.name}_header = ${JSON.stringify(table)};\n`;
+        out += `export const d_isk_${this.name}_ids = ${JSON.stringify(occupiedIDs)};\n`;
 
         // If we're above the requested size, then that's fine, we just need to
         // use that size instead.
@@ -82,25 +84,39 @@ export class Disk {
         const numDataArrays = Math.max(requestedSize, actualSize, 1);
 
         for(let i = 0; i < numDataArrays; i++) {
-            out += `export const d_isk_${this.name}_data_${i} = ${JSON.stringify(padList(data.slice(10_000 * i, 10_000 * (i + 1))))};\n`;
+            out += `export const d_isk_${this.name}_data_${i} = ${JSON.stringify(data.slice(10_000 * i, 10_000 * (i + 1)))};\n`;
         }
 
-        out += `export function d_isk_${this.name}_read(i_ndex) {`;
-        if(numDataArrays === 1) out += `d_isk_${this.name}_data_0[i_ndex]`;
+        out += `display hidden = true;
+        export function d_isk_${this.name}_array(i_ndex) {`;
+        if(numDataArrays === 1) out += `d_isk_${this.name}_data_0`;
         else {
             out += "const a_rray_num = floor(i_ndex / 10000);";
 
             for(let i = 0; i < numDataArrays; i++) {
                 if(i === 0) {
-                    out += `if(a_rray_num == ${i}) { d_isk_${this.name}_data_${i}[i_ndex] }`;
+                    out += `if(a_rray_num == ${i}) { d_isk_${this.name}_data_${i} }`;
                 } else if(i === numDataArrays - 1) {
-                    out += `else { d_isk_${this.name}_data_${i}[i_ndex] }`;
+                    out += `else { d_isk_${this.name}_data_${i} }`;
                 } else {
-                    out += `else if(a_rray_num == ${i}) { d_isk_${this.name}_data_${i}[i_ndex] }`;
+                    out += `else if(a_rray_num == ${i}) { d_isk_${this.name}_data_${i} }`;
                 }
             }
         }
         out += "}";
+
+        // Get the right index to read from.
+        // This always needs to start at 1, so
+        // we need to do this correction.
+        // Also, this is inline because it's a really simple function.
+        out += `inline function d_isk_${this.name}_index(i_ndex) {
+            1 + mod(i_ndex - 1, 10000)
+        }`;
+
+        out += `display hidden = true;
+        export function d_isk_${this.name}_read(i_ndex) {
+            d_isk_${this.name}_array(i_ndex)[d_isk_${this.name}_index(i_ndex)]
+        }`;
 
         out += `inline const DISK_${this.name}_HEADER_NAME_SIZE = ${HEADER_NAME_SIZE};`;
         out += `inline const DISK_${this.name}_HEADER_BLOCKS_SIZE = ${HEADER_BLOCKS_SIZE};`;

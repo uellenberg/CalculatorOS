@@ -85,7 +85,7 @@ export const getNumOrBlock = (args: TemplateArgs, state: TemplateState, idx: num
 /**
  * Pads a list to a certain number of elements, appending zeros where needed.
  */
-export function padList<T>(list: T[], length = 10_000) : T[] {
+export function padList<T>(list: T[], length) : T[] {
     const out = Array(length).fill(0);
     for(let i = 0; i < list.length; i++) {
         out[i] = list[i];

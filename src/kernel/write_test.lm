@@ -6,7 +6,7 @@ createBehavior!("write_test", {
     // This space is managed by us directly, not the runtime, so we can just access
     // it as *(3).
     setItemName!("w_rite_test_buffer");
-    setVal!("write_test_buffer", { [stackid(r_un_test),4,0,-1,4,0,0,0,0,0,0,0,0,0,0,0,0] });
+    setVal!("write_test_buffer", { [stackid(r_un_test),4,0,-1,4] });
     setValAction!("write_test_buffer", {
         r_unstack(write_test_buffer)
     });
@@ -94,11 +94,13 @@ stackfunction r_un_test() {
         stackvar byteIdx;
         byteIdx = 0;
         while(byteIdx < (BYTES_PER_FLOAT / 2) && getTwoByte(blockLocation, byteIdx) != 0) {
-            // blockIndex starts at 1 already, so we don't need to offset it.
-            const blockIndex = getTwoByte(blockLocation, byteIdx);
+            // Find the starting index for the block (accounting for Desmos lists starting at 1).
+            // Blocks start at 1 (so that the above check can work), but we need to correct
+            // for this when doing our indexing.
+            const blockIndex = 1 + DISK_main_BLOCK_SIZE * (getTwoByte(blockLocation, byteIdx) - 1);
             stackvar k;
             k = 0;
-            while(d_isk_main_read(blockIndex + k) != 0) {
+            while(d_isk_main_read(blockIndex + k) != 0 && k < DISK_main_BLOCK_SIZE) {
                 // If there's an item in our output space that hasn't been
                 // read yet, keep waiting until it has been.
                 if(stack[3] == 0) {
