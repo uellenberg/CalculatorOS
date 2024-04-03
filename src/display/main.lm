@@ -1,7 +1,7 @@
 inline const DISPLAY_LEFT_X = -3;
 inline const DISPLAY_TOP_Y = 2;
-inline const DISPLAY_TEXT_WIDTH = 0.3;
-inline const DISPLAY_TEXT_HEIGHT = 0.3;
+inline const DISPLAY_TEXT_WIDTH = 0.35;
+inline const DISPLAY_TEXT_HEIGHT = 0.4;
 
 inline const DISPLAY_WIDTH = floor(abs(2 * DISPLAY_LEFT_X) / DISPLAY_TEXT_WIDTH);
 inline const DISPLAY_HEIGHT = floor(abs(2 * DISPLAY_TOP_Y) / DISPLAY_TEXT_HEIGHT);

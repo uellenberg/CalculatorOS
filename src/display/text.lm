@@ -67,6 +67,8 @@ forEachChar!(ALPHABET, {
             display folder = "Display (LAG)";
             display hidden = true;
             display label = "CHAR";
+            display size = width / 750;
+            display color = b_lack;
         });
         setVal!("display_CHARCODE", { [] });
 

@@ -8,6 +8,8 @@ setGlobalDefaultDisplay!({
     display folder = "Update Actions";
 });
 
+// Import global color constants.
+import!("colors.lm");
 // TODO: Create background.
 // Create terminal.
 import!("display/main.lm");
