@@ -18,7 +18,7 @@ inline const PRINT_SYSCALL_ID = 4;
 createBehavior!("syscall", {
     setDefaultDisplay!({ display folder = "Syscalls"; });
 
-    setItemName!("h_anding_syscall");
+    setItemName!("h_andling_syscall");
     setVal!("handlingSyscall", 0);
 
     // Print syscall.
@@ -46,9 +46,9 @@ createBehavior!("syscall", {
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         if(activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0) {
-            display_buffer
-        } else {
             getByte(activeProcessStack[4], getVal!("byteReadPos"))
+        } else {
+            display_buffer
         }
     }, 110);
 

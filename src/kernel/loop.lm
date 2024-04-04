@@ -23,6 +23,9 @@ import!("syscall.lm");
 import!("process.lm");
 
 createBehavior!("mainLoop", {
+    setDefaultDisplay!({ display folder = "Main Loop"; });
+
+    setItemName!("a_ctive_process_id");
     setVal!("activeProcessID", 1);
 
     // Run right before process handling happens (it happens at 410).
@@ -33,13 +36,14 @@ createBehavior!("mainLoop", {
             selectBehavior!("syscall", { state = getValSelect!("syscall.handlingSyscall"); });
         };
 
-        if(handlingSyscall) {
+        const activeProcesses = {
+            selectBehavior!("processManager", { state = getValSelect!("processManager.activeProcesses"); });
+        };
+
+        if(handlingSyscall || activeProcesses.length == 0) {
             activeProcessID
         } else {
-            const activeProcesses = {
-                selectBehavior!("processManager", { state = getValSelect!("processManager.activeProcesses"); });
-            };
-            activeProcesses[random() * activeProcesses.length + 1]
+            activeProcesses[floor(random() * activeProcesses.length) + 1]
         }
     }, 409);
 });

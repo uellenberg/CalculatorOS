@@ -18,13 +18,8 @@ stackfunction r_un_test() {
 
     // Output each part of the file's name.
     while(d_isk_main_header[nameStart + j] != 0 && j < DISK_main_HEADER_NAME_SIZE) {
-        // If there's an item in our output space that hasn't been
-        // read yet, keep waiting until it has been.
-        if(stack[3] == 0) {
-            stack[3] = PRINT_SYSCALL_ID;
-            stack[4] = d_isk_main_header[nameStart + j];
-            j = j + 1;
-        }
+        p_rint(d_isk_main_header[nameStart + j]);
+        j = j + 1;
     }
 
     // Now, read each block for data and output it.
@@ -47,13 +42,8 @@ stackfunction r_un_test() {
             stackvar k;
             k = 0;
             while(d_isk_main_read(blockIndex + k) != 0 && k < DISK_main_BLOCK_SIZE) {
-                // If there's an item in our output space that hasn't been
-                // read yet, keep waiting until it has been.
-                if(stack[3] == 0) {
-                    stack[3] = PRINT_SYSCALL_ID;
-                    stack[4] = d_isk_main_header[nameStart + j];
-                    k = k + 1;
-                }
+                p_rint(d_isk_main_read(blockIndex + k));
+                k = k + 1;
             }
 
             byteIdx = byteIdx + 1;

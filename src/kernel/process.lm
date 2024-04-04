@@ -16,7 +16,9 @@ createBehavior!("processManager", {
     setDefaultDisplay!({ display folder = "Process Manager"; });
 
     setItemName!("n_ext_process_id");
-    setVal!("nextProcessID", 1);
+    // Set this to the next process ID after the ones
+    // given to all of the processes by default.
+    setVal!("nextProcessID", { get!(NUM_PROCESSES) + 1 });
 
     setItemName!("n_ext_process_stack");
     setVal!("nextProcessStack", { [] });
@@ -130,7 +132,11 @@ createBehavior!("process", {
     setVal!("stack", { DEFAULT_PROCESS_STACK });
     setMut!("stack");
 
-    setVal!("processID", { get!(PROCESS_IDX) });
+    // Increment the counter here so that it applies to this and the
+    // previous item.
+    // Because we've incremented it, we need to subtract 1.
+    setItemDisplay!({ define!(PROCESS_IDX, PROCESS_IDX + 1); });
+    setVal!("processID", { get!(PROCESS_IDX) - 1 });
     setMut!("processID");
 
     // First, we should take over the process mentioned in the process manager
@@ -147,8 +153,12 @@ createBehavior!("process", {
             selectBehavior!("processManager", { state = getValSelect!("processManager.inactiveProcesses"); });
         };
 
+        const hasNextProcess = {
+            selectBehavior!("processManager", { state = getValSelect!("processManager.hasNextProcess"); });
+        };
+
         // This is inside of an if to prevent undefined from messing things up.
-        if(inactiveProcesses.length != 0) {
+        if(inactiveProcesses.length != 0 && hasNextProcess) {
             getVal!("processID") == inactiveProcesses[1]
         } else {
             0
@@ -179,9 +189,7 @@ createBehavior!("process", {
         }
     }, 411);
 
-    // This is the last item, so it needs to increment the process_idx counter.
-    setItemDisplay!({ define!(PROCESS_IDX, PROCESS_IDX + 1); });
-        // Now, run the process if we're the selected one and there isn't a syscall running.
+    // Now, run the process if we're the selected one and there isn't a syscall running.
     // If we are the selected one, and there isn't a syscall running, but there is
     // syscall data, that means that the sycall just ended and we should clear the sycall data.
     setValAction!("stack", {
@@ -195,7 +203,7 @@ createBehavior!("process", {
             if(handlingSyscall) {
                 stack
             } else {
-                c_lear_syscall(stack)
+                r_unstack(c_lear_syscall(stack))
             }
         } else {
             stack

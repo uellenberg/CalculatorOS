@@ -1,3 +1,6 @@
+// Import system API.
+import!("api.lm");
+
 // Import all programs.
 import!("write_test.lm");
 

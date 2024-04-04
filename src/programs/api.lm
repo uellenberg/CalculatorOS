@@ -1,0 +1,8 @@
+folder "System API" {
+    // Takes in several bytes encoded as a float and prints it to the
+    // standard output.
+    stackfunction p_rint(b_ytes) {
+        stack[3] = PRINT_SYSCALL_ID;
+        stack[4] = b_ytes;
+    }
+}
