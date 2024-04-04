@@ -3,7 +3,6 @@
 // - Process Acquisition: 410
 // - Process Run: 430
 
-define!(PROCESS_IDX, 1);
 define!(NUM_PROCESSES, 20);
 
 // Processes have 10 floats of empty space for syscalls.
@@ -39,7 +38,7 @@ createBehavior!("processManager", {
 
     setValAction!("shouldClearProcess", {
         getVal!("hasNextProcess") == 1 && getVal!("nextProcessStack").length != 0
-    }, 400);
+    }, 400, true, true);
 
     setValAction!("nextProcessID", {
         if(getVal!("shouldClearProcess")) {
@@ -47,7 +46,7 @@ createBehavior!("processManager", {
         } else {
             nextProcessID
         }
-    }, 401);
+    }, 401, true, true);
 
     setValAction!("nextProcessStack", {
         if(getVal!("shouldClearProcess")) {
@@ -55,7 +54,7 @@ createBehavior!("processManager", {
         } else {
             nextProcessStack
         }
-    }, 401);
+    }, 401, true, true);
 
     // If we do have a stack and we aren't meant to clear it, then we should
     // set this to 1.
@@ -67,7 +66,7 @@ createBehavior!("processManager", {
         } else {
             hasNextProcess
         }
-    }, 401);
+    }, 401, true, true);
 
     // Now, we'll build lists of active and inactive
     // processes so that the main loop can pick a process
@@ -93,6 +92,7 @@ createBehavior!("processManager", {
 
     helper!({
         // Returns 0 if the process isn't active, and the ID if it is.
+        display folder = "Process Manager";
         export function p_rocess_active(p_id, p_stack) {
             if(p_stack[1] == -1) {
                 0
@@ -102,6 +102,7 @@ createBehavior!("processManager", {
         }
 
         // Returns 0 if the process is active, and the ID if it isn't.
+        display folder = "Process Manager";
         export function p_rocess_inactive(p_id, p_stack) {
             if(p_stack[1] == -1) {
                 p_id
@@ -115,6 +116,7 @@ createBehavior!("processManager", {
         // Get the stack of a certain process (syscall layer) so that it
         // can have its syscalls handled.
         display hidden = true;
+        display folder = "Process Manager";
         export function s_yscall_get_stack(p_id) {
             state = DEFAULT_PROCESS_STACK;
 
@@ -127,18 +129,18 @@ createBehavior!("processManager", {
     }, 99);
 });
 
+define!(PROCESS_IDX, 1);
+
 createBehavior!("process", {
     setDefaultDisplay!({ display folder = "Process (#${get!(PROCESS_IDX)})"; });
 
     setVal!("stack", { DEFAULT_PROCESS_STACK });
-    setMut!("stack");
 
     // Increment the counter here so that it applies to this and the
     // previous item.
     // Because we've incremented it, we need to subtract 1.
     setItemDisplay!({ define!(PROCESS_IDX, PROCESS_IDX + 1); });
     setVal!("processID", { get!(PROCESS_IDX) - 1 });
-    setMut!("processID");
 
     // First, we should take over the process mentioned in the process manager
     // if we're the process that's allowed to do so.
@@ -148,6 +150,8 @@ createBehavior!("process", {
 
     setVal!("shouldAcquireProcess", 0);
     setInline!("shouldAcquireProcess");
+
+    setDefaultDisplay!({ display folder = "Process Updates"; });
 
     setValAction!("shouldAcquireProcess", {
         const inactiveProcesses = {
@@ -164,7 +168,7 @@ createBehavior!("process", {
         } else {
             0
         }
-    }, 410);
+    }, 410, true, true);
 
     setValAction!("stack", {
         if(getVal!("shouldAcquireProcess")) {
@@ -176,7 +180,7 @@ createBehavior!("process", {
         } else {
             stack
         }
-    }, 411);
+    }, 411, true, true);
 
     setValAction!("processID", {
         if(getVal!("shouldAcquireProcess")) {
@@ -188,7 +192,7 @@ createBehavior!("process", {
         } else {
             processID
         }
-    }, 411);
+    }, 411, true, true);
 
     // Now, run the process if we're the selected one and there isn't a syscall running.
     // If we are the selected one, and there isn't a syscall running, but there is
@@ -209,7 +213,7 @@ createBehavior!("process", {
         } else {
             stack
         }
-    }, 412);
+    }, 412, true, true);
 
     helper!({
         // Clears all syscall data in a stack.

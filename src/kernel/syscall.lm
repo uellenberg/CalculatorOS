@@ -50,7 +50,7 @@ createBehavior!("syscall", {
         } else {
             display_buffer
         }
-    }, 110);
+    }, 110, true, true);
 
     setValAction!("byteReadPos", {
         const activeProcessID = {
@@ -64,7 +64,7 @@ createBehavior!("syscall", {
         } else {
             byteReadPos
         }
-    }, 111);
+    }, 111, true, true);
 
     setValAction!("printSyscallActive", {
         // If we're in a print syscall and we haven't read everything (byteReadPos < BYTES_PER_FLOAT),
@@ -75,9 +75,9 @@ createBehavior!("syscall", {
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0 && getVal!("byteReadPos") < BYTES_PER_FLOAT
-    }, 120);
+    }, 120, true, true);
 
     setValAction!("handlingSyscall", {
         getVal!("printSyscallActive")
-    }, 130);
+    }, 130, true, true);
 });

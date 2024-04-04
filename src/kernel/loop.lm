@@ -45,5 +45,5 @@ createBehavior!("mainLoop", {
         } else {
             activeProcesses[floor(random() * activeProcesses.length) + 1]
         }
-    }, 409);
+    }, 409, true, true);
 });
