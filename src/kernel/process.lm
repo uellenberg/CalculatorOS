@@ -114,6 +114,7 @@ createBehavior!("processManager", {
     behaviorCustom!({
         // Get the stack of a certain process (syscall layer) so that it
         // can have its syscalls handled.
+        display hidden = true;
         export function s_yscall_get_stack(p_id) {
             state = DEFAULT_PROCESS_STACK;
 
