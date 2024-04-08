@@ -3,5 +3,7 @@ stackfunction a_lloc_test() {
     stackvar output;
     m_alloc(10, &output);
 
-    p_rint(e_ncode_two_bytes([output]));
+    // Basic numer to string conversion.
+    const outputByte = stringRaw!("0123456789")[output + 1];
+    p_rint(e_ncode_bytes([outputByte]));
 }

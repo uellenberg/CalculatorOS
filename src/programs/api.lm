@@ -17,6 +17,7 @@ folder "System API" {
     // Takes in a required size (in bytes) and returns a memory pointer.
     stackfunction m_alloc(s_ize, r_et) {
         stack[3] = MEMALLOC_SYSCALL_ID;
+        stack[4] = s_ize;
         s_yscall_ret(r_et);
     }
 }

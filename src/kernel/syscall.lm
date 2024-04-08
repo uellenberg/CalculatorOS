@@ -100,7 +100,8 @@ createBehavior!("syscallMemAlloc", {
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID) {
-            m_em_alloc_header(activeProcessStack[SYSCALL_STARTING_INDEX + 1])
+        const numBlocks = min(1, ceil(activeProcessStack[SYSCALL_STARTING_INDEX + 1] / DISK_main_BLOCK_SIZE));
+            m_em_alloc_header(numBlocks)
         } else {
             m_emory_main_header
         }
@@ -112,7 +113,8 @@ createBehavior!("syscallMemAlloc", {
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID) {
-            m_em_occupy_blocks(activeProcessStack[SYSCALL_STARTING_INDEX + 1])
+            const numBlocks = min(1, ceil(activeProcessStack[SYSCALL_STARTING_INDEX + 1] / DISK_main_BLOCK_SIZE));
+            m_em_occupy_blocks(numBlocks)
         } else {
             m_emory_main_ids
         }
@@ -135,10 +137,11 @@ createBehavior!("syscallMemAlloc", {
         // Gets the next header block ID for the memory.
         display folder = "Syscalls";
         export function m_em_next_header_block_id() {
-            const indices = range(1, 10000);
+            const numHeaderBlocks = floor(10000 / MEMORY_main_HEADER_SIZE);
+            const indices = range(1, numHeaderBlocks);
             // Filter all of the indices that have their
-            // active byte set to 1.
-            const filteredIndices = indices.filter(idx => !m_emory_main_header[1 + MEMORY_main_HEADER_SIZE*(idx - 1)]);
+            // active byte set to 0 (or they don't exist).
+            const filteredIndices = indices.filter(idx => (1 + MEMORY_main_HEADER_SIZE*(idx - 1)) > length(m_emory_main_header) || !m_emory_main_header[1 + MEMORY_main_HEADER_SIZE*(idx - 1)]);
 
             filteredIndices[1]
         }
@@ -146,18 +149,21 @@ createBehavior!("syscallMemAlloc", {
         // Gets the list of unoccupied blocks.
         display folder = "Syscalls";
         export function m_em_unoccupied_blocks() {
-            const indices = range(1, 10000);
+            const numBlocks = floor(10000 / MEMORY_main_BLOCK_SIZE);
+            const indices = range(1, numBlocks);
             // Filter all the indices that m_emory_main_ids does not contain.
-            indices.filter(idx => m_emory_main_ids.filter(occupiedID => occupiedID == idx).length == 0)
+            // This works because unique will filter out further items from the
+            // joined list, then we'll remove the items from the unique.
+            unique(join(m_emory_main_ids, indices))[range(m_emory_main_ids.length + 1, numBlocks)]
         }
 
-        // Returns the new occupied blocks list after allocating s_ize to it.
+        // Returns the new occupied blocks list after allocating s_ize blocks to it.
         display folder = "Syscalls";
         export function m_em_occupy_blocks(s_ize) {
             join(m_emory_main_ids, m_em_unoccupied_blocks()[range(1, s_ize)])
         }
 
-        // Returns the new header, with s_ize bytes
+        // Returns the new header, with s_ize blocks
         // allocated.
         display folder = "Syscalls";
         export function m_em_alloc_header(s_ize) {
@@ -184,14 +190,16 @@ createBehavior!("syscallMemAlloc", {
                 // s_ize is also the maximum index, so limit it to that.
                 const blocksUpperIndex = min(s_ize, blocksLowerIndex + (BYTES_PER_FLOAT / 2) - 1);
 
-                // If blocksUpperIndex < blocksLowerIndex, that means we exceeded the size
-                // requested.
+                // Don't exceed the size requested.
                 // In order to reduce duplicate code, we'll simply set the index to 1
                 // if this is the case, instead of doing no array set at all.
-                const setIndex = blocksUpperIndex > blocksLowerIndex ? index : headerIndex;
-                const setValue = blocksUpperIndex > blocksLowerIndex ? 1 : e_ncode_two_bytes(b_locks[range(blocksLowerIndex, blocksUpperIndex)]);
+                const numItems = get!(ALLOC_IDX) * (BYTES_PER_FLOAT / 2);
+                const setIndex = numItems > s_ize ? index : headerIndex;
+                const setValue = numItems > s_ize ? 1 : e_ncode_two_bytes(b_locks[range(blocksLowerIndex, blocksUpperIndex)]);
 
                 newHeader[setIndex] = setValue;
+
+                define!(ALLOC_IDX, ALLOC_IDX + 1);
             }, MEMORY_main_HEADER_BLOCKS_SIZE);
 
             newHeader

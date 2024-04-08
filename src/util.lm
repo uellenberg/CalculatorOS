@@ -22,22 +22,25 @@ folder "Byte Operations" {
     export function e_ncode_bytes(b_ytes) {
         const base = 256;
 
-        sum(n = 0; b_ytes.length) {
-            b_ytes[n + 1] * (base ^ n)
+        sum(n = 1; b_ytes.length) {
+            b_ytes[n] * (base ^ (BYTES_PER_FLOAT - n))
         }
     }
 
     export function e_ncode_two_bytes(b_ytes) {
         const base = 256;
 
-        sum(n = 0; b_ytes.length) {
-            const byte = if(n % 2 == 0) {
-                floor(b_ytes[n + 1] / 256)
-            } else {
-                b_ytes[n + 1] % 256
-            };
+        sum(n = 1; b_ytes.length) {
+            const p1 = floor(b_ytes[n] / 256);
+            const p2 = b_ytes[n] % 256;
 
-            byte * (base ^ n)
+            // Increment the power by twice each iteration,
+            // because we're handling two bytes each loop.
+            // The final minus 1 is there to ensure that
+            // power eventually reaches 0.
+            const power = BYTES_PER_FLOAT - 2 * (n - 1) - 1;
+
+            p1 * (base ^ power) + p2 * (base ^ (power - 1))
         }
     }
 }

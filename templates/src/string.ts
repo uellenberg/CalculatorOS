@@ -4,7 +4,7 @@ import {TemplateObject} from "logimat";
 import {fromManyBytes} from "./types/Float";
 
 /**
- * Converts a string into an array of bytes.
+ * Converts a string into an array of bytes (encoded as floats).
  * Usage: string!(value: string);
  */
 export const string: TemplateObject = {
@@ -15,6 +15,21 @@ export const string: TemplateObject = {
         const value = getString(args, state, 0, "A value is required!");
 
         return JSON.stringify(fromManyBytes(value.split("").map(char => char.charCodeAt(0)), 0));
+    }
+};
+
+/**
+ * Converts a string into an array of bytes.
+ * Usage: stringRaw!(value: string);
+ */
+export const stringRaw: TemplateObject = {
+    function: (args, state: TemplateState, context) => {
+        ensureState(state);
+        expressionCheck(context);
+
+        const value = getString(args, state, 0, "A value is required!");
+
+        return JSON.stringify(value.split("").map(char => char.charCodeAt(0)));
     }
 };
 

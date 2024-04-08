@@ -1,5 +1,5 @@
 // The memory looks like this:
-// - m_emory_main_header[index] - A memory table list, containing blocks of BYTES_PER_FLOAT * DISK_main_HEADER_BLOCKS_SIZE
+// - m_emory_main_header[index] - A memory table list, containing blocks of BYTES_PER_FLOAT * MEMORY_main_HEADER_BLOCKS_SIZE
 //   for an ordered list of blocks.
 //   Each block has an ID of 2 bytes (0-65535). Each block is prefixed by a
 //   0 or a 1 to designate whether it's filled or not. Therefore, empty blocks
@@ -7,8 +7,8 @@
 // - m_emory_main_read(index) - A series of memory data lists, enough to meet the requested size.
 //   Block IDs start at 1 so that 0 can be used to indicate no block, so they need to have
 //   1 subtracted from them in order to be properly used.
-//   Each block is BYTES_PER_FLOAT * DISK_main_BLOCK_SIZE bytes long. Therefore, the ID
-//   can be multiplied by DISK_main_BLOCK_SIZE (and have 1 added to it, due to Desmos),
+//   Each block is BYTES_PER_FLOAT * MEMORY_main_BLOCK_SIZE bytes long. Therefore, the ID
+//   can be multiplied by MEMORY_main_BLOCK_SIZE (and have 1 added to it, due to Desmos),
 //   in order to get the starting point of the block.
 // - m_emory_main_ids[index] - An occupied blocks list, which stores the block IDs as numbers,
 //   so each item in the list is a single ID.

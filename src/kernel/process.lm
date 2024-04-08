@@ -6,7 +6,7 @@
 define!(NUM_PROCESSES, 20);
 
 // Processes have 10 floats of empty space for syscalls, plus one extra for syscall returns.
-inline const DEFAULT_PROCESS_STACK = [-1, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 14];
+inline const DEFAULT_PROCESS_STACK = [-1, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 14, 0, 0, 0, 0, 0, 0, 0, 0];
 define!(STACK_LENGTH, 10);
 inline const SYSCALL_STARTING_INDEX = 3;
 inline const SYSCALL_LENGTH = get!(STACK_LENGTH);
@@ -213,7 +213,7 @@ createBehavior!("process", {
             // are fully processed.
             if(handlingSyscall) {
                 stack
-            } else if(stack[SYSCALL_RETURN_POSITION] == 0) {
+            } else if(stack[SYSCALL_STARTING_INDEX] == 0) {
                 r_unstack(stack)
             } else {
                 c_lear_syscall(stack)
