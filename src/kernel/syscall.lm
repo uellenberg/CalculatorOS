@@ -21,8 +21,15 @@ createBehavior!("syscall", {
     setItemName!("h_andling_syscall");
     setVal!("handlingSyscall", 0);
 
-    // Print syscall.
-    setItemName!("b_yte_read_pos");
+    setValAction!("handlingSyscall", {
+        getVal!("base.syscallPrint.printSyscallActive")
+    }, 130, true, true);
+});
+
+createBehavior!("syscallPrint", {
+    setDefaultDisplay!({ display folder = "Syscalls"; });
+
+    setItemName!("p_rint_byte_read_pos");
     setVal!("byteReadPos", 0);
 
     setItemName!("p_rint_syscall_active");
@@ -31,7 +38,7 @@ createBehavior!("syscall", {
 
     // Reset everything if we aren't currently handling a syscall.
     setValAction!("byteReadPos", {
-        if(getVal!("handlingSyscall")) {
+        if(getVal!("base.syscall.handlingSyscall")) {
             byteReadPos
         } else {
             0
@@ -76,8 +83,9 @@ createBehavior!("syscall", {
 
         activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0 && getVal!("byteReadPos") < BYTES_PER_FLOAT
     }, 120, true, true);
+});
 
-    setValAction!("handlingSyscall", {
-        getVal!("printSyscallActive")
-    }, 130, true, true);
+extendPrefab!("main", {
+    useBehaviorPrefab!("syscall");
+    useBehaviorPrefab!("syscallPrint");
 });

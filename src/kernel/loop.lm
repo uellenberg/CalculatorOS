@@ -47,3 +47,7 @@ createBehavior!("mainLoop", {
         }
     }, 409, true, true);
 });
+
+extendPrefab!("main", {
+    useBehaviorPrefab!("mainLoop");
+});

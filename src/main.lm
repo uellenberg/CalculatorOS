@@ -8,6 +8,9 @@ setGlobalDefaultDisplay!({
     display folder = "Update Actions";
 });
 
+// Create a prefab that individual components can register themselves to.
+createPrefab!("main");
+
 // Import utility functions.
 import!("util.lm");
 // Import global color constants.
@@ -21,12 +24,6 @@ import!("programs/main.lm");
 // Create kernel.
 import!("kernel/main.lm");
 
-// Create a single object for the entire program.
-createObject!({
-    useBehavior!("display");
-    useBehavior!("processManager");
-    useBehavior!("syscall");
-    useBehavior!("mainLoop");
-});
+usePrefab!("main");
 
 finalize!();

@@ -78,3 +78,7 @@ forEachChar!(ALPHABET, {
         }, 500);
     });
 });
+
+extendPrefab!("main", {
+    useBehaviorPrefab!("display");
+});
