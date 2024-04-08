@@ -1,0 +1,7 @@
+display folder = "Alloc Test Program";
+stackfunction a_lloc_test() {
+    stackvar output;
+    m_alloc(10, &output);
+
+    p_rint(e_ncode_two_bytes([output]));
+}

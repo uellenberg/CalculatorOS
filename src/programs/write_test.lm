@@ -34,11 +34,11 @@ stackfunction r_un_test() {
         // Each block is 2-bytes.
         stackvar byteIdx;
         byteIdx = 0;
-        while(byteIdx < (BYTES_PER_FLOAT / 2) && getTwoByte(blockLocation, byteIdx) != 0) {
+        while(byteIdx < (BYTES_PER_FLOAT / 2) && g_et_two_byte(blockLocation, byteIdx) != 0) {
             // Find the starting index for the block (accounting for Desmos lists starting at 1).
             // Blocks start at 1 (so that the above check can work), but we need to correct
             // for this when doing our indexing.
-            const blockIndex = 1 + DISK_main_BLOCK_SIZE * (getTwoByte(blockLocation, byteIdx) - 1);
+            const blockIndex = 1 + DISK_main_BLOCK_SIZE * (g_et_two_byte(blockLocation, byteIdx) - 1);
             stackvar k;
             k = 0;
             while(d_isk_main_read(blockIndex + k) != 0 && k < DISK_main_BLOCK_SIZE) {

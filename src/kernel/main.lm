@@ -1,5 +1,7 @@
 // TODO: Initialize memory.
 // Initialize disks.
 import!("disk.lm");
+// Initialize memory.
+import!("memory.lm");
 // Initialize the main loop.
 import!("loop.lm");

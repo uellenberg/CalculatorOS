@@ -70,13 +70,13 @@ A process can perform a system call by setting the first number in its allocated
 
 • (virtual) Memory Read.
 
-• 8 — Memory Clear. The first number should be the memory index. This will clear the allocated memory at that index, allowing it to be re-used.
+• 7 — Memory Clear. The first number should be the memory index. This will clear the allocated memory at that index, allowing it to be re-used.
 
-• 9 — File Write. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. The next number will be the byte index to write to. Finally, the next number will be the byte to write into the file. This will write the data to a file (creating it if it doesn't exist, and re-allocating it if it exceeds the file's allocation).
+• 8 — File Write. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. The next number will be the byte index to write to. Finally, the next number will be the byte to write into the file. This will write the data to a file (creating it if it doesn't exist, and re-allocating it if it exceeds the file's allocation).
 
 • (virtual) File Read.
 
-• 11 — File Delete. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. If the file exists, it will be deleted.
+• 9 — File Delete. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. If the file exists, it will be deleted.
 
 • (virtual) Cur Process ID.
 
@@ -86,9 +86,9 @@ A process can perform a system call by setting the first number in its allocated
 
 • (virtual) Read stdout.
 
-• 16 — Write stdin. The first number should be the process index. The second should be the byte to write. That byte will be added to the end of the process' stdin.
+• 10 — Write stdin. The first number should be the process index. The second should be the byte to write. That byte will be added to the end of the process' stdin.
 
-• 17 — Start process. The first number should be the length (in bytes) of the process' location (as an absolute path), and the subsequent ones will be the the bytes containing that path. The number after this will be a stack pointer. If the process is executed successfully (its file exists), the the new process ID will be placed into the stack pointer. Otherwise, the stack pointer will read -1.
+• 11 — Start process. The first number should be the length (in bytes) of the process' location (as an absolute path), and the subsequent ones will be the the bytes containing that path. The number after this will be a stack pointer. If the process is executed successfully (its file exists), the the new process ID will be placed into the stack pointer. Otherwise, the stack pointer will read -1.
 
 Syscalls are implemented as actions that update certain pieces of data depending on whether the syscall is requested. This means that the code for syscalls will be spread across multiple different actions.
 

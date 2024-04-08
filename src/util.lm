@@ -1,19 +1,43 @@
-inline function getByte(a, b) {
-    const base = 256;
-    const len = BYTES_PER_FLOAT;
+folder "Byte Operations" {
+    export function g_et_byte(f_loat, i_ndex) {
+        const base = 256;
+        const len = BYTES_PER_FLOAT;
 
-    const pt1 = a/base^(len-b-1);
-    const pt2 = a/base^(len-b);
+        const pt1 = f_loat/base^(len-i_ndex-1);
+        const pt2 = f_loat/base^(len-i_ndex);
 
-    floor(pt1-floor(pt2)*base)
-}
+        floor(pt1-floor(pt2)*base)
+    }
 
-inline function getTwoByte(a, b) {
-    const base = 256*256;
-    const len = BYTES_PER_FLOAT / 2;
+    export function g_et_two_byte(f_loat, i_ndex) {
+        const base = 256*256;
+        const len = BYTES_PER_FLOAT / 2;
 
-    const pt1 = a/base^(len-b-1);
-    const pt2 = a/base^(len-b);
+        const pt1 = f_loat/base^(len-i_ndex-1);
+        const pt2 = f_loat/base^(len-i_ndex);
 
-    floor(pt1-floor(pt2)*base)
+        floor(pt1-floor(pt2)*base)
+    }
+
+    export function e_ncode_bytes(b_ytes) {
+        const base = 256;
+
+        sum(n = 0; b_ytes.length) {
+            b_ytes[n + 1] * (base ^ n)
+        }
+    }
+
+    export function e_ncode_two_bytes(b_ytes) {
+        const base = 256;
+
+        sum(n = 0; b_ytes.length) {
+            const byte = if(n % 2 == 0) {
+                floor(b_ytes[n + 1] / 256)
+            } else {
+                b_ytes[n + 1] % 256
+            };
+
+            byte * (base ^ n)
+        }
+    }
 }

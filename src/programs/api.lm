@@ -1,8 +1,22 @@
 folder "System API" {
+    // Places the return of a syscall into
+    // the value specified by r_et.
+    // This needs to be a separate function because
+    // syscalls are only handled at breakpoints.
+    stackfunction s_yscall_ret(r_et) {
+        *r_et = stack[SYSCALL_RETURN_POSITION];
+    }
+
     // Takes in several bytes encoded as a float and prints it to the
     // standard output.
     stackfunction p_rint(b_ytes) {
         stack[3] = PRINT_SYSCALL_ID;
         stack[4] = b_ytes;
+    }
+
+    // Takes in a required size (in bytes) and returns a memory pointer.
+    stackfunction m_alloc(s_ize, r_et) {
+        stack[3] = MEMALLOC_SYSCALL_ID;
+        s_yscall_ret(r_et);
     }
 }

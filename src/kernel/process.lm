@@ -5,11 +5,12 @@
 
 define!(NUM_PROCESSES, 20);
 
-// Processes have 10 floats of empty space for syscalls.
-inline const DEFAULT_PROCESS_STACK = [-1, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 13];
+// Processes have 10 floats of empty space for syscalls, plus one extra for syscall returns.
+inline const DEFAULT_PROCESS_STACK = [-1, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 14];
 define!(STACK_LENGTH, 10);
 inline const SYSCALL_STARTING_INDEX = 3;
 inline const SYSCALL_LENGTH = get!(STACK_LENGTH);
+inline const SYSCALL_RETURN_POSITION = 13;
 
 createBehavior!("processManager", {
     setDefaultDisplay!({ display folder = "Process Manager"; });
@@ -205,10 +206,17 @@ createBehavior!("process", {
             const handlingSyscall = {
                 selectBehavior!("syscall", { state = getValSelect!("syscall.handlingSyscall"); });
             };
+
+            // If we aren't handling a syscall but there's still a syscall in our stack,
+            // then we'll clear it and not run the process.
+            // This is done to ensure that syscall's updates (particularly to the disk or memory)
+            // are fully processed.
             if(handlingSyscall) {
                 stack
+            } else if(stack[SYSCALL_RETURN_POSITION] == 0) {
+                r_unstack(stack)
             } else {
-                r_unstack(c_lear_syscall(stack))
+                c_lear_syscall(stack)
             }
         } else {
             stack
@@ -228,9 +236,17 @@ createBehavior!("process", {
                 define!(STACK_IDX, STACK_IDX + 1);
             }, STACK_LENGTH);
 
+            const syscallReturn = {
+                selectBehavior!("syscall", { state = getValSelect!("syscall.syscallReturn"); });
+            };
+
+            // Set the syscall return.
+            // Only override if there's a new syscall return.
+            newStack[SYSCALL_RETURN_POSITION] = syscallReturn == 0 ? newStack[SYSCALL_RETURN_POSITION] : syscallReturn;
+
             newStack
         }
-    });
+    }, 412);
 });
 
 createPrefab!("process", {

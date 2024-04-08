@@ -73,8 +73,16 @@ export class Disk {
         // in Desmos, but they need to be split and formatted.
         let out = "";
 
-        out += `export const d_isk_${this.name}_header = ${JSON.stringify(table)};\n`;
-        out += `export const d_isk_${this.name}_ids = ${JSON.stringify(occupiedIDs)};\n`;
+        out += `createBehavior!("disk_${this.name}", {
+        setDefaultDisplay!({ display folder = "Storage (LAG)"; });
+        
+        setItemName!("d_isk_${this.name}_header");
+        setVal!("d_isk_${this.name}_header", { ${JSON.stringify(table)} });
+        setMut!("d_isk_${this.name}_header");
+        
+        setItemName!("d_isk_${this.name}_ids");
+        setVal!("d_isk_${this.name}_ids", { ${JSON.stringify(occupiedIDs)} });
+        setMut!("d_isk_${this.name}_ids");`;
 
         // If we're above the requested size, then that's fine, we just need to
         // use that size instead.
@@ -84,10 +92,13 @@ export class Disk {
         const numDataArrays = Math.max(requestedSize, actualSize, 1);
 
         for(let i = 0; i < numDataArrays; i++) {
-            out += `export const d_isk_${this.name}_data_${i} = ${JSON.stringify(data.slice(10_000 * i, 10_000 * (i + 1)))};\n`;
+            out += `setItemName!("d_isk_${this.name}_data_${i}");
+            setVal!("d_isk_${this.name}_data_${i}", { ${JSON.stringify(data.slice(10_000 * i, 10_000 * (i + 1)))} });
+            setMut!("d_isk_${this.name}_data_${i}");`;
         }
 
-        out += `display hidden = true;
+        out += `display folder = "Storage (LAG)";
+        display hidden = true;
         export function d_isk_${this.name}_array(i_ndex) {`;
         if(numDataArrays === 1) out += `d_isk_${this.name}_data_0`;
         else {
@@ -113,15 +124,26 @@ export class Disk {
             1 + mod(i_ndex - 1, 10000)
         }`;
 
-        out += `display hidden = true;
+        out += `
+        display folder = "Storage (LAG)";
+        display hidden = true;
         export function d_isk_${this.name}_read(i_ndex) {
             d_isk_${this.name}_array(i_ndex)[d_isk_${this.name}_index(i_ndex)]
-        }`;
+        }
+        
+        inline const DISK_${this.name}_HEADER_NAME_SIZE = ${HEADER_NAME_SIZE};
+        define!(DISK_${this.name}_HEADER_NAME_SIZE, ${HEADER_NAME_SIZE});
+        
+        inline const DISK_${this.name}_HEADER_BLOCKS_SIZE = ${HEADER_BLOCKS_SIZE};
+        define!(DISK_${this.name}_HEADER_BLOCKS_SIZE, ${HEADER_BLOCKS_SIZE});
+        
+        inline const DISK_${this.name}_HEADER_SIZE = ${HEADER_SIZE};
+        define!(DISK_${this.name}_HEADER_SIZE, ${HEADER_SIZE});
+        
+        inline const DISK_${this.name}_BLOCK_SIZE = ${BLOCK_SIZE};
+        define!(DISK_${this.name}_BLOCK_SIZE, ${BLOCK_SIZE});`;
 
-        out += `inline const DISK_${this.name}_HEADER_NAME_SIZE = ${HEADER_NAME_SIZE};`;
-        out += `inline const DISK_${this.name}_HEADER_BLOCKS_SIZE = ${HEADER_BLOCKS_SIZE};`;
-        out += `inline const DISK_${this.name}_HEADER_SIZE = ${HEADER_SIZE};`;
-        out += `inline const DISK_${this.name}_BLOCK_SIZE = ${BLOCK_SIZE};`;
+        out += "});";
 
         return out;
     }

@@ -13,10 +13,12 @@
 // - d_isk_main_ids[index] - An occupied blocks list, which stores the block IDs as numbers,
 //   so each item in the list is a single ID.
 
-folder "Storage (LAG)" {
-    registerDisk!("main", 1024);
+registerDisk!("main", 1024);
 
-    addFileString!("main", "/tmp.txt", "This is a test file.");
+addFileString!("main", "/tmp.txt", "This is a test file.");
 
-    exportDisk!("main");
-}
+exportDisk!("main");
+
+extendPrefab!("main", {
+    useBehaviorPrefab!("disk_main");
+});

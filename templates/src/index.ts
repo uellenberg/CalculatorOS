@@ -1,6 +1,7 @@
 import {TemplatesObject} from "logimat";
 import {addFileBytes, addFileString, exportDisk, registerDisk} from "./disk";
 import {forEachChar, string} from "./string";
+import {exportMemory, registerMemory} from "./memory";
 
 export const BYTES_PER_FLOAT = 6;
 
@@ -16,6 +17,8 @@ export const templates: TemplatesObject = {
     addFileString,
     addFileBytes,
     exportDisk,
+    registerMemory,
+    exportMemory,
     string,
     forEachChar,
 };

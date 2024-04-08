@@ -14,6 +14,7 @@
 // - Set handlingSyscall: 130
 
 inline const PRINT_SYSCALL_ID = 4;
+inline const MEMALLOC_SYSCALL_ID = 5;
 
 createBehavior!("syscall", {
     setDefaultDisplay!({ display folder = "Syscalls"; });
@@ -21,8 +22,16 @@ createBehavior!("syscall", {
     setItemName!("h_andling_syscall");
     setVal!("handlingSyscall", 0);
 
+    setItemName!("s_yscall_return");
+    setVal!("syscallReturn", 0);
+
+    // Reset the syscall return so that it only gets used a single time.
+    setValAction!("syscallReturn", {
+        0
+    }, 100);
+
     setValAction!("handlingSyscall", {
-        getVal!("base.syscallPrint.printSyscallActive")
+        getVal!("base.syscallPrint.active")
     }, 130, true, true);
 });
 
@@ -33,8 +42,8 @@ createBehavior!("syscallPrint", {
     setVal!("byteReadPos", 0);
 
     setItemName!("p_rint_syscall_active");
-    setVal!("printSyscallActive", 0);
-    setInline!("printSyscallActive");
+    setVal!("active", 0);
+    setInline!("active");
 
     // Reset everything if we aren't currently handling a syscall.
     setValAction!("byteReadPos", {
@@ -47,45 +56,151 @@ createBehavior!("syscallPrint", {
 
     // Write to the display buffer if there's data and we're at a valid position.
     setValAction!("base.display.display_buffer", {
-        const activeProcessID = {
-            selectBehavior!("mainLoop", { state = getValSelect!("mainLoop.activeProcessID"); });
-        };
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
-        if(activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0) {
-            getByte(activeProcessStack[4], getVal!("byteReadPos"))
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == PRINT_SYSCALL_ID) {
+            g_et_byte(activeProcessStack[SYSCALL_STARTING_INDEX + 1], getVal!("byteReadPos"))
         } else {
             display_buffer
         }
     }, 110, true, true);
 
     setValAction!("byteReadPos", {
-        const activeProcessID = {
-            selectBehavior!("mainLoop", { state = getValSelect!("mainLoop.activeProcessID"); });
-        };
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         // Increment if there's data.
-        if(activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0) {
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == PRINT_SYSCALL_ID) {
             byteReadPos + 1
         } else {
             byteReadPos
         }
     }, 111, true, true);
 
-    setValAction!("printSyscallActive", {
+    setValAction!("active", {
         // If we're in a print syscall and we haven't read everything (byteReadPos < BYTES_PER_FLOAT),
         // then we're still doing the sycall.
-        const activeProcessID = {
-            selectBehavior!("mainLoop", { state = getValSelect!("mainLoop.activeProcessID"); });
-        };
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
-        activeProcessStack[3] == PRINT_SYSCALL_ID && activeProcessStack[4] != 0 && getVal!("byteReadPos") < BYTES_PER_FLOAT
+        activeProcessStack[SYSCALL_STARTING_INDEX] == PRINT_SYSCALL_ID && getVal!("byteReadPos") < BYTES_PER_FLOAT
     }, 120, true, true);
+});
+
+createBehavior!("syscallMemAlloc", {
+    // This syscall completes in one go, so it doesn't need to be marked
+    // as active.
+
+    setDefaultDisplay!({ display folder = "Syscalls"; });
+
+    // Write to the header with the newly allocated section.
+    setValAction!("base.memory_main.m_emory_main_header", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID) {
+            m_em_alloc_header(activeProcessStack[SYSCALL_STARTING_INDEX + 1])
+        } else {
+            m_emory_main_header
+        }
+    }, 110, true, true);
+
+    // Write to the allocated blocks list with the newly allocated section.
+    setValAction!("base.memory_main.m_emory_main_ids", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID) {
+            m_em_occupy_blocks(activeProcessStack[SYSCALL_STARTING_INDEX + 1])
+        } else {
+            m_emory_main_ids
+        }
+    }, 110, true, true);
+
+    // Write the newly allocated block into the return.
+    setValAction!("base.syscall.syscallReturn", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        // Increment if there's data.
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID) {
+            m_em_next_header_block_id()
+        } else {
+            syscallReturn
+        }
+    }, 111, true, true);
+
+    helper!({
+        // Gets the next header block ID for the memory.
+        display folder = "Syscalls";
+        export function m_em_next_header_block_id() {
+            const indices = range(1, 10000);
+            // Filter all of the indices that have their
+            // active byte set to 1.
+            const filteredIndices = indices.filter(idx => !m_emory_main_header[1 + MEMORY_main_HEADER_SIZE*(idx - 1)]);
+
+            filteredIndices[1]
+        }
+
+        // Gets the list of unoccupied blocks.
+        display folder = "Syscalls";
+        export function m_em_unoccupied_blocks() {
+            const indices = range(1, 10000);
+            // Filter all the indices that m_emory_main_ids does not contain.
+            indices.filter(idx => m_emory_main_ids.filter(occupiedID => occupiedID == idx).length == 0)
+        }
+
+        // Returns the new occupied blocks list after allocating s_ize to it.
+        display folder = "Syscalls";
+        export function m_em_occupy_blocks(s_ize) {
+            join(m_emory_main_ids, m_em_unoccupied_blocks()[range(1, s_ize)])
+        }
+
+        // Returns the new header, with s_ize bytes
+        // allocated.
+        display folder = "Syscalls";
+        export function m_em_alloc_header(s_ize) {
+            // The next_header_block_id function is expensive,
+            // so this prevents it from being evaluated multiple
+            // times.
+            m_em_alloc_header_1(s_ize, m_em_next_header_block_id(), m_em_unoccupied_blocks())
+        }
+
+        display folder = "Syscalls";
+        export function m_em_alloc_header_1(s_ize, i_d, b_locks) {
+            const index = 1 + MEMORY_main_HEADER_SIZE*(i_d - 1);
+
+            let newHeader = m_emory_main_header;
+            newHeader[index] = 1;
+
+            define!(ALLOC_IDX, 0);
+            iterate!({
+                // Add 1 because we start at 0.
+                const headerIndex = index + get!(ALLOC_IDX) + 1;
+                // Each header item holds BYTES_PER_FLOAT / 2 block indices.
+                const blocksLowerIndex = 1 + get!(ALLOC_IDX) * (BYTES_PER_FLOAT / 2);
+                // Subtract 1 because this is an inclusive bound.
+                // s_ize is also the maximum index, so limit it to that.
+                const blocksUpperIndex = min(s_ize, blocksLowerIndex + (BYTES_PER_FLOAT / 2) - 1);
+
+                // If blocksUpperIndex < blocksLowerIndex, that means we exceeded the size
+                // requested.
+                // In order to reduce duplicate code, we'll simply set the index to 1
+                // if this is the case, instead of doing no array set at all.
+                const setIndex = blocksUpperIndex > blocksLowerIndex ? index : headerIndex;
+                const setValue = blocksUpperIndex > blocksLowerIndex ? 1 : e_ncode_two_bytes(b_locks[range(blocksLowerIndex, blocksUpperIndex)]);
+
+                newHeader[setIndex] = setValue;
+            }, MEMORY_main_HEADER_BLOCKS_SIZE);
+
+            newHeader
+        }
+    });
 });
 
 extendPrefab!("main", {
     useBehaviorPrefab!("syscall");
     useBehaviorPrefab!("syscallPrint");
+    useBehaviorPrefab!("syscallMemAlloc");
 });

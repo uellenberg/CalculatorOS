@@ -3,15 +3,24 @@ import!("api.lm");
 
 // Import all programs.
 import!("write_test.lm");
+import!("alloc_test.lm");
 
 // Register programs.
 display folder = "Programs";
-export const p_rograms = [stackid(r_un_test)];
+export const p_rograms = [stackid(r_un_test), stackid(a_lloc_test)];
 
 display folder = "Programs";
 action r_un_test_program = n_ext_process_stack {
     let newStack = DEFAULT_PROCESS_STACK;
     newStack[1] = p_rograms[1];
+
+    newStack
+}
+
+display folder = "Programs";
+action r_un_alloc_program = n_ext_process_stack {
+    let newStack = DEFAULT_PROCESS_STACK;
+    newStack[1] = p_rograms[2];
 
     newStack
 }
