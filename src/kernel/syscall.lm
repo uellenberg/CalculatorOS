@@ -15,6 +15,7 @@
 
 inline const PRINT_SYSCALL_ID = 4;
 inline const MEMALLOC_SYSCALL_ID = 5;
+inline const MEMDEALLOC_SYSCALL_ID = 7;
 
 createBehavior!("syscall", {
     setDefaultDisplay!({ display folder = "Syscalls"; });
@@ -100,10 +101,10 @@ createBehavior!("syscallMemAlloc", {
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID) {
-        // Extra check to prevent Desmos from evaluating huge arrays.
-        const numBlocks = activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID
-                        ? ceil(activeProcessStack[SYSCALL_STARTING_INDEX + 1] / MEMORY_main_BLOCK_SIZE)
-                        : 0;
+            // Extra check to prevent Desmos from evaluating huge arrays.
+            const numBlocks = activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID
+                            ? ceil(activeProcessStack[SYSCALL_STARTING_INDEX + 1] / MEMORY_main_BLOCK_SIZE)
+                            : 0;
             m_em_alloc_header(numBlocks)
         } else {
             m_emory_main_header
@@ -213,8 +214,87 @@ createBehavior!("syscallMemAlloc", {
     });
 });
 
+createBehavior!("syscallMemDealloc", {
+    // This syscall completes in one go, so it doesn't need to be marked
+    // as active.
+
+    setDefaultDisplay!({ display folder = "Syscalls"; });
+
+    // Write to the allocated blocks list with the newly allocated section.
+    setValAction!("base.memory_main.m_emory_main_ids", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMDEALLOC_SYSCALL_ID) {
+            const id = activeProcessStack[SYSCALL_STARTING_INDEX + 1];
+
+            // Extra check to prevent Desmos from evaluating huge arrays.
+            const numBlocks = activeProcessStack[SYSCALL_STARTING_INDEX] == MEMDEALLOC_SYSCALL_ID
+                            ? ceil(activeProcessStack[SYSCALL_STARTING_INDEX +21] / MEMORY_main_BLOCK_SIZE)
+                            : 0;
+
+            m_em_deoccupy_blocks(id, numBlocks)
+        } else {
+            m_emory_main_ids
+        }
+    }, 110, true, true);
+
+    // Set the corresponding header section to unfilled.
+    setValAction!("base.memory_main.m_emory_main_header", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMDEALLOC_SYSCALL_ID) {
+            const id = activeProcessStack[SYSCALL_STARTING_INDEX + 1];
+            const index = 1 + MEMORY_main_HEADER_SIZE*(id - 1);
+
+            let newHeader = m_emory_main_header;
+            // We just need to set the block to unfilled.
+            // If it gets reallocated, then that allocation will
+            // override the data that we've left behind.
+            // And if it doesn't (due to being smaller), then
+            // any reads/writes won't use the non-overridden data
+            // because they would be invalid anyway.
+            newHeader[index] = 0;
+
+            newHeader
+        } else {
+            m_emory_main_header
+        }
+    }, 111, true, true);
+
+    helper!({
+        // Returns the new occupied blocks list after removing the s_ize
+        // blocks at header block i_dx.
+        display folder = "Syscalls";
+        export function m_em_deoccupy_blocks(i_d, s_ize) {
+            // This index represents the starting point
+            // where the first list of data blocks appears.
+            // The 2 is 1 for Desmos starting at 1, and another 1
+            // for going past the filled/unfilled data.
+            const blocksStart = 2 + MEMORY_main_HEADER_SIZE*(i_d - 1);
+            const dataBlockIDsPerHeaderBlock = BYTES_PER_FLOAT / 2;
+
+            const blocksToRemove = range(1, s_ize).map(offset => {
+                // Figure out which header block this one is a part of.
+                const headerOffset = floor(offset / dataBlockIDsPerHeaderBlock);
+                // Figure out the index of this data block inside of the header block.
+                // These indices start at 0, so we'll subtract by 1 first (also to make it work with mod).
+                const headerIndex = mod(offset - 1, dataBlockIDsPerHeaderBlock);
+
+                g_et_two_byte(m_emory_main_header[blocksStart + headerOffset], headerIndex)
+            });
+
+            // This removes blocksToRemove from m_emory_main_ids.
+            // blocksToRemove[s_ize] exists, so we need to start at s_ize + 1.
+            unique(join(blocksToRemove, m_emory_main_ids)).slice(s_ize + 1)
+        }
+    });
+});
+
 extendPrefab!("main", {
     useBehaviorPrefab!("syscall");
     useBehaviorPrefab!("syscallPrint");
     useBehaviorPrefab!("syscallMemAlloc");
+    useBehaviorPrefab!("syscallMemDealloc");
 });

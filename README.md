@@ -72,7 +72,7 @@ A process can perform a system call by setting the first number in its allocated
 
 • (virtual) Memory Read.
 
-• 7 — Memory Clear. The first number should be the memory index. This will clear the allocated memory at that index, allowing it to be re-used.
+• 7 — Memory Clear. The first number should be the memory index, and the second should be the allocation length (in bytes). This will clear the allocated memory at that index, allowing it to be re-used.
 
 • 8 — File Write. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. The next number will be the byte index to write to. Finally, the next number will be the byte to write into the file. This will write the data to a file (creating it if it doesn't exist, and re-allocating it if it exceeds the file's allocation).
 

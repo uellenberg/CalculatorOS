@@ -1,5 +1,5 @@
 display folder = "Write Test Program";
-stackfunction r_un_test() {
+stackfunction w_rite_test() {
     stackvar i;
     i = 0;
     const num_headers = floor(10000 / DISK_main_HEADER_SIZE);

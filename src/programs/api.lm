@@ -20,4 +20,11 @@ folder "System API" {
         stack[3] = MEMALLOC_SYSCALL_ID;
         s_yscall_ret(r_et);
     }
+
+    // Takes in a memory pointer and its size (in bytes) and frees it.
+    stackfunction f_ree(i_d, s_ize) {
+        stack[4] = i_d;
+        stack[5] = s_ize;
+        stack[3] = MEMDEALLOC_SYSCALL_ID;
+    }
 }

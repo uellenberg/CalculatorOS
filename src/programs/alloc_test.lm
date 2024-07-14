@@ -6,4 +6,9 @@ stackfunction a_lloc_test() {
     // Basic numer to string conversion.
     const outputByte = stringRaw!("123456789")[output];
     p_rint(e_ncode_bytes([outputByte]));
+
+    // Run the write test since it takes a few seconds.
+    w_rite_test();
+
+    f_ree(output, 10);
 }
