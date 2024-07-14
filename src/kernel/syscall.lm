@@ -303,6 +303,7 @@ createBehavior!("syscallMemWrite", {
     setVal!("writeIndex", 0);
 
     // Set the block to write to.
+    // Starts at 0.
     setValAction!("writeIndex", {
         const activeProcessID = getVal!("base.mainLoop.activeProcessID");
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
@@ -325,7 +326,9 @@ createBehavior!("syscallMemWrite", {
 
             // This is the header section that contains the index of our data block.
             const headerSection = m_emory_main_header[blocksStart + headerBlockIndex];
-            const dataBlockIndex = g_et_two_byte(headerSection, headerBlockTwoByteIndex);
+            // The index starts at 1, so we need to
+            // subtract 1 to make it correct.
+            const dataBlockIndex = g_et_two_byte(headerSection, headerBlockTwoByteIndex) - 1;
 
             // Each data block represents MEMORY_main_BLOCK_SIZE floats.
             // To find the exact float position, we need to get the starting position
