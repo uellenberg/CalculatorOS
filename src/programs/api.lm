@@ -14,17 +14,25 @@ folder "System API" {
         stack[3] = PRINT_SYSCALL_ID;
     }
 
-    // Takes in a required size (in bytes) and returns a memory pointer.
+    // Takes in a required size (in floats) and returns a memory pointer.
     stackfunction m_alloc(s_ize, r_et) {
         stack[4] = s_ize;
         stack[3] = MEMALLOC_SYSCALL_ID;
         s_yscall_ret(r_et);
     }
 
-    // Takes in a memory pointer and its size (in bytes) and frees it.
+    // Takes in a memory pointer and its size (in floats) and frees it.
     stackfunction f_ree(i_d, s_ize) {
         stack[4] = i_d;
         stack[5] = s_ize;
         stack[3] = MEMDEALLOC_SYSCALL_ID;
+    }
+
+    // Takes in a memory pointer and a write offset (in floats), as well as a float to write.
+    stackfunction m_em_write(i_d, o_ffset, d_ata) {
+        stack[4] = i_d;
+        stack[5] = o_ffset;
+        stack[6] = d_ata;
+        stack[3] = MEMWRITE_SYSCALL_ID;
     }
 }

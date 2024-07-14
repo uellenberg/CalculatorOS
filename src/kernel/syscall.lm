@@ -16,6 +16,7 @@
 inline const PRINT_SYSCALL_ID = 4;
 inline const MEMALLOC_SYSCALL_ID = 5;
 inline const MEMDEALLOC_SYSCALL_ID = 7;
+inline const MEMWRITE_SYSCALL_ID = 6;
 
 createBehavior!("syscall", {
     setDefaultDisplay!({ display folder = "Syscalls"; });
@@ -292,9 +293,86 @@ createBehavior!("syscallMemDealloc", {
     });
 });
 
+createBehavior!("syscallMemWrite", {
+    // This syscall completes in one go, so it doesn't need to be marked
+    // as active.
+
+    setDefaultDisplay!({ display folder = "Syscalls"; });
+
+    setItemName!("m_em_write_block");
+    setVal!("writeIndex", 0);
+
+    // Set the block to write to.
+    setValAction!("writeIndex", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMWRITE_SYSCALL_ID) {
+            const id = activeProcessStack[SYSCALL_STARTING_INDEX + 1];
+            const index = activeProcessStack[SYSCALL_STARTING_INDEX + 2];
+
+            // Index refers to the float index in the allocation.
+            // This can be turned into an index in the data array
+            // by first determining which header block its data block index is in:
+            // Each header block contains (BYTES_PER_FLOAT * MEMORY_main_HEADER_BLOCKS_SIZE) / 2
+            // data block indices, and each data block contains MEMORY_main_BLOCK_SIZE floats.
+            const dataBlockNum = floor(index / MEMORY_main_BLOCK_SIZE);
+            const headerBlockIndex = floor(dataBlockNum / ((BYTES_PER_FLOAT * MEMORY_main_HEADER_BLOCKS_SIZE) / 2));
+            const headerBlockTwoByteIndex = mod(dataBlockNum, (BYTES_PER_FLOAT * MEMORY_main_HEADER_BLOCKS_SIZE) / 2);
+
+            // This is the index of the first header block for the specified ID.
+            const blocksStart = 2 + MEMORY_main_HEADER_SIZE*(id - 1);
+
+            // This is the header section that contains the index of our data block.
+            const headerSection = m_emory_main_header[blocksStart + headerBlockIndex];
+            const dataBlockIndex = g_et_two_byte(headerSection, headerBlockTwoByteIndex);
+
+            // Each data block represents MEMORY_main_BLOCK_SIZE floats.
+            // To find the exact float position, we need to get the starting position
+            // of the block and add it to the offset from the starting index.
+            // This offset is given by mod(index, MEMORY_main_BLOCK_SIZE).
+            const dataIndex = dataBlockIndex * MEMORY_main_BLOCK_SIZE + mod(index, MEMORY_main_BLOCK_SIZE);
+
+            dataIndex
+        } else {
+            0
+        }
+    }, 110, true, true);
+
+    memoryDataForEach!("main", {
+        // Write to each memory list, setting the correct value (if it exists).
+        setValAction!("base.memory_main.m_emory_main_data_MEMID", {
+            const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+            const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+            const writeData = activeProcessStack[SYSCALL_STARTING_INDEX + 3];
+
+            const writeIndex = getVal!("writeIndex");
+            const memoryDataIndex = MEMID;
+
+            // Each memory list has 10000 elements (Desmos restriction).
+            // To figure out the list index, we just need to compute floor(writeIndex / 10000).
+            // If that matches our index, then we'll write it.
+            // Otherwise, we'll do nothing.
+            const requestedMemoryDataIndex = floor(writeIndex / 10000);
+            const localWriteIndex = mod(writeIndex, 10000);
+
+            if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMWRITE_SYSCALL_ID && memoryDataIndex == requestedMemoryDataIndex) {
+                let tempArr = m_emory_main_data_MEMID;
+                tempArr[writeIndex + 1] = writeData;
+
+                tempArr
+            } else {
+                m_emory_main_data_MEMID
+            }
+        }, 111, true, true);
+    });
+});
+
 extendPrefab!("main", {
     useBehaviorPrefab!("syscall");
     useBehaviorPrefab!("syscallPrint");
     useBehaviorPrefab!("syscallMemAlloc");
     useBehaviorPrefab!("syscallMemDealloc");
+    useBehaviorPrefab!("syscallMemWrite");
 });

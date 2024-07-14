@@ -66,13 +66,13 @@ A process can perform a system call by setting the first number in its allocated
 
 • 4 — Print. The first number (bytes encoded into a float) will be printed to the terminal. Additional numbers will be ignored.
 
-• 5 — Memory Alloc. The first number should be the length (in bytes) to allocate, and the next should be the stack pointer. If the allocation is successful, then the stack pointer will be set to the memory index of that allocation. Otherwise, the pointer will be set to 0.
+• 5 — Memory Alloc. The first number should be the length (in floats) to allocate, and the next should be the stack pointer. If the allocation is successful, then the stack pointer will be set to the memory index of that allocation. Otherwise, the pointer will be set to 0.
 
-• 6 — Memory Write. The first number should be the memory index. The second should be the byte which will be written to that memory address.
+• 6 — Memory Write. The first number should be the memory index. The second should be the float offset to write to. The third should be the float which will be written to that memory address.
 
 • (virtual) Memory Read.
 
-• 7 — Memory Clear. The first number should be the memory index, and the second should be the allocation length (in bytes). This will clear the allocated memory at that index, allowing it to be re-used.
+• 7 — Memory Clear. The first number should be the memory index, and the second should be the allocation length (in floats). This will clear the allocated memory at that index, allowing it to be re-used.
 
 • 8 — File Write. The first number should be the length of the file name (in bytes). Subsequent bytes will be the file's name. The next number will be the byte index to write to. Finally, the next number will be the byte to write into the file. This will write the data to a file (creating it if it doesn't exist, and re-allocating it if it exceeds the file's allocation).
 

@@ -7,6 +7,8 @@ stackfunction a_lloc_test() {
     const outputByte = stringRaw!("123456789")[output];
     p_rint(e_ncode_bytes([outputByte]));
 
+    m_em_write(output, 0, 101);
+
     // Run the write test since it takes a few seconds.
     w_rite_test();
 

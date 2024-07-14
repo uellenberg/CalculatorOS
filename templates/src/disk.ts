@@ -3,6 +3,7 @@ import {ensureState, getBlock, getNum, getString, outerCheck} from "./util";
 import {TemplateState} from "./types/TemplateState";
 import {Disk} from "./types/Disk";
 import {fromManyBytes} from "./types/Float";
+import {BYTES_PER_FLOAT} from "./index";
 
 /**
  * Registers a disk. Once all the files are written to it, it can be exported with exportDisk.
@@ -85,5 +86,31 @@ export const exportDisk: TemplateObject = {
 
         state.calculatoros.disks[name].locked = true;
         return state.calculatoros.disks[name].export();
+    }
+};
+
+/**
+ * Repeats a statement for each piece of disk data, replacing
+ * DISKID with the ID of the disk data list.
+ * Usage: diskDataForEach!(name: string, code: Block);
+ */
+export const diskDataForEach: TemplateObject = {
+    function: (args, state: TemplateState, context) => {
+        ensureState(state);
+
+        const name = getString(args, state, 0, "A disk name is required!").trim().toLowerCase();
+        const code = getBlock(args, state, 1, "A piece of code to run is required!");
+
+        if(!(name in state.calculatoros.disks)) throw new Error("A disk with the name \"" + name + "\" does not exist!");
+
+        const numArrays = Math.max(1, Math.ceil(state.calculatoros.disks[name].size / BYTES_PER_FLOAT / 10_000));
+
+        let out = "";
+
+        for (let i = 0; i < numArrays; i++){
+            out += code.replaceAll("DISKID", i.toString());
+        }
+
+        return out;
     }
 };

@@ -4,6 +4,7 @@ import {TemplateState} from "./types/TemplateState";
 import {Disk} from "./types/Disk";
 import {fromManyBytes} from "./types/Float";
 import {Memory} from "./types/Memory";
+import {BYTES_PER_FLOAT} from "./index";
 
 /**
  * Registers a memory. It can be exported with exportMemory.
@@ -39,5 +40,31 @@ export const exportMemory: TemplateObject = {
         if(!(name in state.calculatoros.memory)) throw new Error("A memory with the name \"" + name + "\" does not exist!");
 
         return state.calculatoros.memory[name].export();
+    }
+};
+
+/**
+ * Repeats a statement for each piece of memory data, replacing
+ * MEMID with the ID of the memory data list.
+ * Usage: memoryDataForEach!(name: string, code: Block);
+ */
+export const memoryDataForEach: TemplateObject = {
+    function: (args, state: TemplateState, context) => {
+        ensureState(state);
+
+        const name = getString(args, state, 0, "A memory name is required!").trim().toLowerCase();
+        const code = getBlock(args, state, 1, "A piece of code to run is required!");
+
+        if(!(name in state.calculatoros.memory)) throw new Error("A memory with the name \"" + name + "\" does not exist!");
+
+        const numArrays = Math.max(1, Math.ceil(state.calculatoros.memory[name].size / BYTES_PER_FLOAT / 10_000));
+
+        let out = "";
+
+        for (let i = 0; i < numArrays; i++){
+            out += code.replaceAll("MEMID", i.toString());
+        }
+
+        return out;
     }
 };
