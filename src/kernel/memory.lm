@@ -19,3 +19,11 @@ exportMemory!("main");
 extendPrefab!("main", {
     useBehaviorPrefab!("memory_main");
 });
+
+// The maximum size of a single memory allocation, in bytes.
+// Each header block has MEMORY_main_HEADER_BLOCKS_SIZE blocks of BYTES_PER_FLOAT, storing the
+// IDs of the data blocks that the allocation controls.
+// Each ID is 2 bytes, so we can multiply and divide by two to find the maximum
+// allocation size in data blocks.
+// This is converted to bytes by the number of bytes per data block.
+inline const MEMORY_MAX_ALLOCATION = (BYTES_PER_FLOAT / 2) * MEMORY_main_HEADER_BLOCKS_SIZE * MEMORY_main_BLOCK_SIZE;

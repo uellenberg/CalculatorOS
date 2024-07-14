@@ -100,7 +100,10 @@ createBehavior!("syscallMemAlloc", {
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID) {
-        const numBlocks = min(1, ceil(activeProcessStack[SYSCALL_STARTING_INDEX + 1] / DISK_main_BLOCK_SIZE));
+        // Extra check to prevent Desmos from evaluating huge arrays.
+        const numBlocks = activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID
+                        ? ceil(activeProcessStack[SYSCALL_STARTING_INDEX + 1] / MEMORY_main_BLOCK_SIZE)
+                        : 0;
             m_em_alloc_header(numBlocks)
         } else {
             m_emory_main_header
@@ -113,7 +116,10 @@ createBehavior!("syscallMemAlloc", {
         const activeProcessStack = s_yscall_get_stack(activeProcessID);
 
         if(activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID) {
-            const numBlocks = min(1, ceil(activeProcessStack[SYSCALL_STARTING_INDEX + 1] / DISK_main_BLOCK_SIZE));
+            // Extra check to prevent Desmos from evaluating huge arrays.
+            const numBlocks = activeProcessStack[SYSCALL_STARTING_INDEX] == MEMALLOC_SYSCALL_ID
+                            ? ceil(activeProcessStack[SYSCALL_STARTING_INDEX + 1] / MEMORY_main_BLOCK_SIZE)
+                            : 0;
             m_em_occupy_blocks(numBlocks)
         } else {
             m_emory_main_ids

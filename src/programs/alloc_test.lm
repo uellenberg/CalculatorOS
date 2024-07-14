@@ -4,6 +4,6 @@ stackfunction a_lloc_test() {
     m_alloc(10, &output);
 
     // Basic numer to string conversion.
-    const outputByte = stringRaw!("0123456789")[output + 1];
+    const outputByte = stringRaw!("123456789")[output];
     p_rint(e_ncode_bytes([outputByte]));
 }

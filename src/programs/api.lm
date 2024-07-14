@@ -10,14 +10,14 @@ folder "System API" {
     // Takes in several bytes encoded as a float and prints it to the
     // standard output.
     stackfunction p_rint(b_ytes) {
-        stack[3] = PRINT_SYSCALL_ID;
         stack[4] = b_ytes;
+        stack[3] = PRINT_SYSCALL_ID;
     }
 
     // Takes in a required size (in bytes) and returns a memory pointer.
     stackfunction m_alloc(s_ize, r_et) {
-        stack[3] = MEMALLOC_SYSCALL_ID;
         stack[4] = s_ize;
+        stack[3] = MEMALLOC_SYSCALL_ID;
         s_yscall_ret(r_et);
     }
 }
