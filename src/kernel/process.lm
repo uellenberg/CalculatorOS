@@ -3,7 +3,7 @@
 // - Process Acquisition: 410
 // - Process Run: 430
 
-define!(NUM_PROCESSES, 20);
+define!(NUM_PROCESSES, 2);
 
 // Processes have 10 floats of empty space for syscalls, plus one extra for syscall returns.
 inline const DEFAULT_PROCESS_STACK = [-1, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 14, 0, 0, 0, 0, 0, 0, 0, 0];
