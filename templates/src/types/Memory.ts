@@ -1,5 +1,7 @@
 import {BYTES_PER_FLOAT} from "../index";
 
+export const MEMORY_BLOCK_SIZE = 100;
+
 export class Memory {
     public name: string;
     public size: number;
@@ -23,8 +25,6 @@ export class Memory {
         //   so each item in the list is a single ID.
         const HEADER_BLOCKS_SIZE = 5;
         const HEADER_SIZE = 1 + HEADER_BLOCKS_SIZE;
-
-        const BLOCK_SIZE = 100;
 
         // Now, generate the data and helpers for the memory.
         let out = "";
@@ -87,8 +87,8 @@ export class Memory {
         inline const MEMORY_${this.name}_HEADER_SIZE = ${HEADER_SIZE};
         define!(MEMORY_${this.name}_HEADER_SIZE, ${HEADER_SIZE});
 
-        inline const MEMORY_${this.name}_BLOCK_SIZE = ${BLOCK_SIZE};
-        define!(MEMORY_${this.name}_BLOCK_SIZE, ${BLOCK_SIZE});`;
+        inline const MEMORY_${this.name}_BLOCK_SIZE = ${MEMORY_BLOCK_SIZE};
+        define!(MEMORY_${this.name}_BLOCK_SIZE, ${MEMORY_BLOCK_SIZE});`;
 
         out += "});";
 

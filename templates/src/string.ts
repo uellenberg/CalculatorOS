@@ -2,6 +2,8 @@ import {ensureState, expressionCheck, getBlock, getString, outerCheck} from "./u
 import {TemplateState} from "./types/TemplateState";
 import {TemplateObject} from "logimat";
 import {fromManyBytes} from "./types/Float";
+import {BYTES_PER_FLOAT} from "./index";
+import {MEMORY_BLOCK_SIZE} from "./types/Memory";
 
 /**
  * Converts a string into an array of bytes (encoded as floats).
@@ -62,5 +64,43 @@ export const forEachChar: TemplateObject = {
         }
 
         return before + out + after;
+    }
+};
+
+/**
+ * Allocates a string in memory, setting variables for its
+ * address, length, and capacity.
+ * The variable names for each of these need to be given as strings.
+ * These variables must exist prior to running the template.
+ * Usage: allocString!(str: string, addrVar: string, lengthVar: string, capVar: string);
+ */
+export const allocString: TemplateObject = {
+    function: (args, state: TemplateState, context) => {
+        ensureState(state);
+
+        const str = getString(args, state, 0, "A string to allocate is required!");
+        const addrVar = getString(args, state, 1, "An address variable is required!");
+        const lengthVar = getString(args, state, 1, "A length variable is required!");
+        const capVar = getString(args, state, 1, "A capacity variable is required!");
+
+        // We need to determine the number of floats to allocate, rounded up to the
+        // memory block size.
+        // Each float can hold BYTES_PER_FLOAT characters.
+        const numFloats = Math.ceil((str.length / BYTES_PER_FLOAT) / MEMORY_BLOCK_SIZE) * MEMORY_BLOCK_SIZE;
+
+        let out = `
+            ${capVar} = ${numFloats};
+            ${lengthVar} = ${str.length};
+            m_alloc(${numFloats}, &${addrVar});
+        `;
+
+        const encodedFloats = fromManyBytes(str.split("").map(char => char.charCodeAt(0)), 0);
+        for(const idx in encodedFloats) {
+            const encodedFloat = encodedFloats[idx];
+
+            out += `w_rite(${addrVar}, ${idx}, ${encodedFloat});`
+        }
+
+        return out;
     }
 };
