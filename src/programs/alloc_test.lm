@@ -14,7 +14,10 @@ stackfunction a_lloc_test() {
     w_rite_test();
 
     // Try reading back one of the written floats.
-    const outputByte = stringRaw!("123456789")[r_ead(output, 1)];
+    stackvar readOutput;
+    r_ead(output, 1, &readOutput);
+
+    const outputByte = stringRaw!("123456789")[readOutput];
     p_rint(e_ncode_bytes([outputByte]));
 
     f_ree(output, 10);

@@ -63,6 +63,7 @@ folder "System API" {
         // This offset is given by mod(o_ffset, MEMORY_main_BLOCK_SIZE).
         const dataIndex = dataBlockIndex * MEMORY_main_BLOCK_SIZE + mod(o_ffset, MEMORY_main_BLOCK_SIZE);
 
-        *r_et = m_emory_main_read(dataIndex);
+        // Add one to get the index into Desmos' range.
+        *r_et = m_emory_main_read(dataIndex + 1);
     }
 }
