@@ -36,6 +36,21 @@ export const stringRaw: TemplateObject = {
 };
 
 /**
+ * Converts a character into a byte.
+ * Usage: char!(value: string);
+ */
+export const char: TemplateObject = {
+    function: (args, state: TemplateState, context) => {
+        ensureState(state);
+        expressionCheck(context);
+
+        const value = getString(args, state, 0, "A value is required!");
+
+        return value.charCodeAt(0).toString();
+    }
+};
+
+/**
  * Repeats a piece of code for each character in a string.
  * Any occurrences of "CHAR" are string-replaced with the character,
  * and any occurrences of "CHARCODE" are replaced with the character's code.
