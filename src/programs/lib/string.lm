@@ -1,0 +1,15 @@
+// Gets the character in the string at the specified index
+// and returns it as a byte.
+stackfunction s_tr_get_char(s_tr_ptr, i_dx, /* & */ o_ut) {
+    // Each string is an array of float-encoded bytes,
+    // each holding BYTES_PER_FLOAT bytes.
+    // First, we need to figure out which float i_dx is stored in.
+    const floatIdx = floor(i_dx / BYTES_PER_FLOAT);
+
+    stackvar floatData;
+    r_ead(s_tr_ptr, floatIdx, &floatData);
+
+    // Next, we need to decode the byte in the
+    // position of the remainder.
+    *o_ut = g_et_byte(floatData, mod(i_dx, BYTES_PER_FLOAT));
+}

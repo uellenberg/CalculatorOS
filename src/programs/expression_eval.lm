@@ -1,0 +1,184 @@
+display folder = "Expression Eval Program";
+stackfunction e_xpression_eval() {
+    stackvar strPtr;
+    stackvar strLen;
+    stackvar strCap;
+
+    allocString!("(1 - -1) * 2.7 / 9", "strPtr", "strLen", "strCap");
+
+    stackvar cursor;
+    cursor = 0;
+
+    stackvar computed;
+    p_arse_addition_expression(strPtr, strLen, &cursor, &computed);
+
+    f_ree(strPtr, strCap);
+}
+
+// Recursive descent based on the following grammar (no error handling):
+// Expression = AdditionExpression
+//
+// AdditionExpression = MultiplicationExpression "+" AdditionExpression
+//                    | MultiplicationExpression "-" AdditionExpression
+//                    | MultiplicationExpression
+//
+// MultiplicationExpression = PrimaryExpression "*" MultiplicationExpression
+//                          | PrimaryExpression "/" MultiplicationExpression
+//                          | PrimaryExpression
+//
+// PrimaryExpression = number
+//                   | "(" Expression ")" -- params
+//
+// number = ("+" | "-")? integer? ("." integer)?
+// integer = ("0".."9")+
+
+display folder = "Expression Eval Program";
+stackfunction p_arse_space(s_tr_ptr, s_tr_len, /* & */ c_ursor) {
+    if(*c_ursor >= s_tr_len) {
+        return;
+    }
+
+    stackvar curChar;
+    s_tr_get_char(s_tr_ptr, *c_ursor, &curChar);
+
+    while(curChar == char!(" ") && *c_ursor < s_tr_len) {
+        *c_ursor = *c_ursor + 1;
+        if(*c_ursor >= s_tr_len) {
+            return;
+        }
+
+        s_tr_get_char(s_tr_ptr, *c_ursor, &curChar);
+    }
+}
+
+display folder = "Expression Eval Program";
+stackfunction p_arse_addition_expression(s_tr_ptr, s_tr_len, /* & */ c_ursor, /* & */ o_ut) {
+    stackvar leftResult;
+    leftResult = 0;
+    p_arse_multiplication_expression(s_tr_ptr, s_tr_len, c_ursor, &leftResult);
+
+    p_arse_space(s_tr_ptr, s_tr_len, c_ursor);
+
+    // Try parsing the operator.
+    // If it doesn't exist, or we're at the end,
+    // then the leftResult is the full result.
+    if(*c_ursor >= s_tr_len) {
+        *o_ut = leftResult;
+    } else {
+        stackvar op;
+        s_tr_get_char(s_tr_ptr, *c_ursor, &op);
+        *c_ursor = *c_ursor + 1;
+
+        stackvar rightResult;
+        rightResult = 0;
+        p_arse_addition_expression(s_tr_ptr, s_tr_len, c_ursor, &rightResult);
+
+        if(op == char!("+")) {
+            *o_ut = leftResult + rightResult;
+        } else {
+            *o_ut = leftResult - rightResult;
+        }
+    }
+}
+
+display folder = "Expression Eval Program";
+stackfunction p_arse_multiplication_expression(s_tr_ptr, s_tr_len, /* & */ c_ursor, /* & */ o_ut) {
+    stackvar leftResult;
+    leftResult = 0;
+    p_arse_primary_expression(s_tr_ptr, s_tr_len, c_ursor, &leftResult);
+
+    p_arse_space(s_tr_ptr, s_tr_len, c_ursor);
+
+    // Try parsing the operator.
+    // If it doesn't exist, or we're at the end,
+    // then the leftResult is the full result.
+    if(*c_ursor >= s_tr_len) {
+        *o_ut = leftResult;
+    } else {
+        stackvar op;
+        s_tr_get_char(s_tr_ptr, *c_ursor, &op);
+        *c_ursor = *c_ursor + 1;
+
+        stackvar rightResult;
+        rightResult = 0;
+        p_arse_multiplication_expression(s_tr_ptr, s_tr_len, c_ursor, &rightResult);
+
+        if(op == char!("*")) {
+            *o_ut = leftResult * rightResult;
+        } else {
+            *o_ut = leftResult / rightResult;
+        }
+    }
+}
+
+display folder = "Expression Eval Program";
+stackfunction p_arse_primary_expression(s_tr_ptr, s_tr_len, /* & */ c_ursor, /* & */ o_ut) {
+    p_arse_space(s_tr_ptr, s_tr_len, c_ursor);
+
+    // Ensure that there's still space left.
+    if(*c_ursor >= s_tr_len) {
+        return;
+    }
+
+    // If the current character is a "(", then we're
+    // parsing a parentheses.
+    // Otherwise, it's a number.
+    stackvar curChar;
+    s_tr_get_char(s_tr_ptr, *c_ursor, &curChar);
+
+    if(curChar == char!("(")) {
+        // Move past the parenthesis.
+        *c_ursor = *c_ursor + 1;
+
+        p_arse_addition_expression(s_tr_ptr, s_tr_len, c_ursor, o_ut);
+        // Increment (assuming that there's a closing parenthesis).
+        p_arse_space(s_tr_ptr, s_tr_len, c_ursor);
+        *c_ursor = *c_ursor + 1;
+    } else {
+        stackvar afterMul;
+        afterMul = 1;
+
+        if(curChar == char!("+") || curChar == char!("-")) {
+            afterMul = curChar == char!("-") ? -1 : 1;
+
+            // Move forward, unless we're at the end.
+            *c_ursor = *c_ursor + 1;
+            if(*c_ursor >= s_tr_len) {
+                return;
+            }
+
+            s_tr_get_char(s_tr_ptr, *c_ursor, &curChar);
+        }
+
+        // Loop through, looking for numbers or a decimal point.
+        stackvar decimalMul;
+        decimalMul = 1;
+
+        stackvar number;
+        number = 0;
+
+        const digitMin = char!("0");
+        const digitMax = char!("9");
+        const decimal = char!(".");
+
+        while((curChar == decimal || (curChar >= digitMin && curChar <= digitMax)) && *c_ursor < s_tr_len) {
+            if(curChar == decimal) {
+                decimalMul = 0.1;
+                *c_ursor = *c_ursor + 1;
+                continue;
+            }
+
+            const parsedDigit = curChar - digitMin;
+            if(decimalMul == 1) {
+                number = number * 10 + parsedDigit;
+            } else {
+                number = number + parsedDigit * decimalMul;
+                decimalMul = decimalMul / 10;
+            }
+
+            *c_ursor = *c_ursor + 1;
+        }
+
+        *o_ut = afterMul * number;
+    }
+}

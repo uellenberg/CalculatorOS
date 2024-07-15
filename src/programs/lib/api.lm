@@ -3,7 +3,7 @@ folder "System API" {
     // the value specified by r_et.
     // This needs to be a separate function because
     // syscalls are only handled at breakpoints.
-    stackfunction s_yscall_ret(r_et) {
+    stackfunction s_yscall_ret(/* & */ r_et) {
         *r_et = stack[SYSCALL_RETURN_POSITION];
     }
 
@@ -15,7 +15,7 @@ folder "System API" {
     }
 
     // Takes in a required size (in floats) and returns a memory pointer.
-    stackfunction m_alloc(s_ize, r_et) {
+    stackfunction m_alloc(s_ize, /* & */ r_et) {
         stack[4] = s_ize;
         stack[3] = MEMALLOC_SYSCALL_ID;
         s_yscall_ret(r_et);
@@ -38,7 +38,7 @@ folder "System API" {
 
     // Takes in a memory pointer and a read offset (in floats) and returns read float.
     // This is not a real syscall.
-    stackfunction r_ead(i_d, o_ffset, r_et) {
+    stackfunction r_ead(i_d, o_ffset, /* & */ r_et) {
         // Offset refers to the float index in the allocation.
         // This can be turned into an index in the data array
         // by first determining which header block its data block index is in:

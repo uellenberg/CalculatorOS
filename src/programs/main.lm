@@ -1,14 +1,16 @@
-// Import system API.
-import!("api.lm");
+// Import system API and other libraries.
+import!("lib/api.lm");
+import!("lib/string.lm");
 
 // Import all programs.
 import!("write_test.lm");
 import!("alloc_test.lm");
 import!("buffer_overflow.lm");
+import!("expression_eval.lm");
 
 // Register programs.
 display folder = "Programs";
-export const p_rograms = [stackid(w_rite_test), stackid(a_lloc_test), stackid(b_uffer_overflow)];
+export const p_rograms = [stackid(w_rite_test), stackid(a_lloc_test), stackid(b_uffer_overflow), stackid(e_xpression_eval)];
 
 display folder = "Programs";
 action r_un_write_program = n_ext_process_stack {
@@ -30,6 +32,14 @@ display folder = "Programs";
 action r_un_buffer_overflow_program = n_ext_process_stack {
     let newStack = DEFAULT_PROCESS_STACK;
     newStack[1] = p_rograms[3];
+
+    newStack
+}
+
+display folder = "Programs";
+action r_un_expression_eval_program = n_ext_process_stack {
+    let newStack = DEFAULT_PROCESS_STACK;
+    newStack[1] = p_rograms[4];
 
     newStack
 }
