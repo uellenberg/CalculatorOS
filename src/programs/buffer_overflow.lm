@@ -1,0 +1,34 @@
+display folder = "Buffer Overflow Program";
+stackfunction b_uffer_overflow() {
+    stackvar strPtr;
+    stackvar strLen;
+    stackvar strCap;
+
+    allocString!("my test string", "strPtr", "strLen", "strCap");
+
+    p_rint_str(strPtr, 14);
+
+    f_ree(strPtr, strCap);
+
+    allocString!("other one", "strPtr", "strLen", "strCap");
+
+    // Uh oh
+    p_rint_str(strPtr, 14);
+
+    f_ree(strPtr, strCap);
+}
+
+stackfunction p_rint_str(a_ddr, l_en) {
+    stackvar i;
+    i = 0;
+
+    while(i < l_en) {
+        stackvar readChunk;
+
+        r_ead(a_ddr, i, &readChunk);
+
+        p_rint(readChunk);
+
+        i = i + 1;
+    }
+}
