@@ -29,10 +29,40 @@ folder "System API" {
     }
 
     // Takes in a memory pointer and a write offset (in floats), as well as a float to write.
-    stackfunction m_em_write(i_d, o_ffset, d_ata) {
+    stackfunction w_rite(i_d, o_ffset, d_ata) {
         stack[4] = i_d;
         stack[5] = o_ffset;
         stack[6] = d_ata;
         stack[3] = MEMWRITE_SYSCALL_ID;
+    }
+
+    // Takes in a memory pointer and a read offset (in floats) and returns read float.
+    // This is not a real syscall.
+    stackfunction r_ead(i_d, o_ffset, r_et) {
+        // Offset refers to the float index in the allocation.
+        // This can be turned into an index in the data array
+        // by first determining which header block its data block index is in:
+        // Each header block contains (BYTES_PER_FLOAT * MEMORY_main_HEADER_BLOCKS_SIZE) / 2
+        // data block indices, and each data block contains MEMORY_main_BLOCK_SIZE floats.
+        const dataBlockNum = floor(o_ffset / MEMORY_main_BLOCK_SIZE);
+        const headerBlockIndex = floor(dataBlockNum / ((BYTES_PER_FLOAT * MEMORY_main_HEADER_BLOCKS_SIZE) / 2));
+        const headerBlockTwoByteIndex = mod(dataBlockNum, (BYTES_PER_FLOAT * MEMORY_main_HEADER_BLOCKS_SIZE) / 2);
+
+        // This is the index of the first header block for the specified ID.
+        const blocksStart = 2 + MEMORY_main_HEADER_SIZE*(i_d - 1);
+
+        // This is the header section that contains the index of our data block.
+        const headerSection = m_emory_main_header[blocksStart + headerBlockIndex];
+        // The index starts at 1, so we need to
+        // subtract 1 to make it correct.
+        const dataBlockIndex = g_et_two_byte(headerSection, headerBlockTwoByteIndex) - 1;
+
+        // Each data block represents MEMORY_main_BLOCK_SIZE floats.
+        // To find the exact float position, we need to get the starting position
+        // of the block and add it to the offset from the starting index.
+        // This offset is given by mod(o_ffset, MEMORY_main_BLOCK_SIZE).
+        const dataIndex = dataBlockIndex * MEMORY_main_BLOCK_SIZE + mod(o_ffset, MEMORY_main_BLOCK_SIZE);
+
+        *r_et = m_emory_main_read(dataIndex);
     }
 }

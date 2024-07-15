@@ -7,10 +7,15 @@ stackfunction a_lloc_test() {
     const outputByte = stringRaw!("123456789")[output];
     p_rint(e_ncode_bytes([outputByte]));
 
-    m_em_write(output, 0, 101);
+    w_rite(output, 0, 101);
+    w_rite(output, 1, 5);
 
     // Run the write test since it takes a few seconds.
     w_rite_test();
+
+    // Try reading back one of the written floats.
+    const outputByte = stringRaw!("123456789")[r_ead(output, 1)];
+    p_rint(e_ncode_bytes([outputByte]));
 
     f_ree(output, 10);
 }
