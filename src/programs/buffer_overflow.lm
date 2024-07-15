@@ -10,7 +10,7 @@ stackfunction b_uffer_overflow() {
 
     f_ree(strPtr, strCap);
 
-    allocString!("other one", "strPtr", "strLen", "strCap");
+    allocString!("other", "strPtr", "strLen", "strCap");
 
     // Uh oh
     p_rint_str(strPtr, 14);
@@ -19,10 +19,12 @@ stackfunction b_uffer_overflow() {
 }
 
 stackfunction p_rint_str(a_ddr, l_en) {
+    const floatLen = ceil(l_en / BYTES_PER_FLOAT);
+
     stackvar i;
     i = 0;
 
-    while(i < l_en) {
+    while(i < floatLen) {
         stackvar readChunk;
 
         r_ead(a_ddr, i, &readChunk);

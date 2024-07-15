@@ -231,7 +231,7 @@ createBehavior!("syscallMemDealloc", {
 
             // Extra check to prevent Desmos from evaluating huge arrays.
             const numBlocks = activeProcessStack[SYSCALL_STARTING_INDEX] == MEMDEALLOC_SYSCALL_ID
-                            ? ceil(activeProcessStack[SYSCALL_STARTING_INDEX +21] / MEMORY_main_BLOCK_SIZE)
+                            ? ceil(activeProcessStack[SYSCALL_STARTING_INDEX + 2] / MEMORY_main_BLOCK_SIZE)
                             : 0;
 
             m_em_deoccupy_blocks(id, numBlocks)

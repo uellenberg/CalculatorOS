@@ -80,8 +80,8 @@ export const allocString: TemplateObject = {
 
         const str = getString(args, state, 0, "A string to allocate is required!");
         const addrVar = getString(args, state, 1, "An address variable is required!");
-        const lengthVar = getString(args, state, 1, "A length variable is required!");
-        const capVar = getString(args, state, 1, "A capacity variable is required!");
+        const lengthVar = getString(args, state, 2, "A length variable is required!");
+        const capVar = getString(args, state, 3, "A capacity variable is required!");
 
         // We need to determine the number of floats to allocate, rounded up to the
         // memory block size.
