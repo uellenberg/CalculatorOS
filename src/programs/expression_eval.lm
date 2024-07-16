@@ -67,6 +67,13 @@ stackfunction p_arse_addition_expression(s_tr_ptr, s_tr_len, /* & */ c_ursor, /*
     } else {
         stackvar op;
         s_tr_get_char(s_tr_ptr, *c_ursor, &op);
+
+        // If op isn't in our list, then default to multiplication.
+        if(op != char!("+") && op != char!("-")) {
+            *o_ut = leftResult;
+            return;
+        }
+
         *c_ursor = *c_ursor + 1;
 
         stackvar rightResult;
@@ -97,6 +104,13 @@ stackfunction p_arse_multiplication_expression(s_tr_ptr, s_tr_len, /* & */ c_urs
     } else {
         stackvar op;
         s_tr_get_char(s_tr_ptr, *c_ursor, &op);
+
+        // If op isn't in our list, then default to primary.
+        if(op != char!("*") && op != char!("/")) {
+            *o_ut = leftResult;
+            return;
+        }
+
         *c_ursor = *c_ursor + 1;
 
         stackvar rightResult;
@@ -164,7 +178,12 @@ stackfunction p_arse_primary_expression(s_tr_ptr, s_tr_len, /* & */ c_ursor, /* 
         while((curChar == decimal || (curChar >= digitMin && curChar <= digitMax)) && *c_ursor < s_tr_len) {
             if(curChar == decimal) {
                 decimalMul = 0.1;
+
                 *c_ursor = *c_ursor + 1;
+                if(*c_ursor < s_tr_len) {
+                    s_tr_get_char(s_tr_ptr, *c_ursor, &curChar);
+                }
+
                 continue;
             }
 
@@ -177,6 +196,9 @@ stackfunction p_arse_primary_expression(s_tr_ptr, s_tr_len, /* & */ c_ursor, /* 
             }
 
             *c_ursor = *c_ursor + 1;
+            if(*c_ursor < s_tr_len) {
+                s_tr_get_char(s_tr_ptr, *c_ursor, &curChar);
+            }
         }
 
         *o_ut = afterMul * number;
