@@ -1,4 +1,4 @@
-import {ensureState, expressionCheck, getBlock, getString, outerCheck} from "./util";
+import {ensureState, expressionCheck, getBlock, getString} from "./util";
 import {TemplateState} from "./types/TemplateState";
 import {TemplateObject} from "logimat";
 import {fromManyBytes} from "./types/Float";
@@ -117,5 +117,136 @@ export const allocString: TemplateObject = {
         }
 
         return out;
+    }
+};
+
+/**
+ * Creates an optimized jump to several pieces of code based on
+ * the value of a string.
+ * This is guaranteed to work for all specified values but may incorrectly
+ * jump to a non-specified value instead of going to the noMatch case if
+ * the string is too close to one of the values.
+ * In all likelihood, noMatch will not be called.
+ * For example, if only a single value is given, this will just run the code specified.
+ * The string's pointer and length values must be given as string variable names.
+ * Usage: stringJumpFast!(strPtr: string, strLen: string, ...(value?: string, valueCase?: Block), noMatch?: Block);
+ */
+export const stringJumpFast: TemplateObject = {
+    function: (args, state: TemplateState, context) => {
+        ensureState(state);
+
+        const numPreArgs = 2;
+        const strPtr = getString(args, state, 0, "A string pointer to check if required!");
+        const strLen = getString(args, state, 1, "A string length to check if required!");
+
+        const checkPairs: {value: string, block: string}[] = [];
+
+        let handledArgs = 0;
+        // i + 1 is used here because both value and block must be in bounds.
+        for(let i = numPreArgs; (i + 1) < args.length; i+=2) {
+            const value = getString(args, state, i, "Expected a string value to check!");
+            const block = getBlock(args, state, i+1, "Expected a block to run!");
+
+            // This is invalid (for reasons mentioned below).
+            if(value === "") {
+                throw new Error("Empty strings are not valid values!");
+            }
+
+            checkPairs.push({value, block});
+
+            handledArgs+=2;
+        }
+
+        if(handledArgs === 0) {
+            throw new Error("At least one test value must be given!");
+        }
+
+        // If there's still another arg, it means we have a noMatch case.
+        const noMatch = (numPreArgs + handledArgs) < args.length ? getBlock(args, state, numPreArgs + handledArgs, "Expected a no match block to run!") : null;
+
+        const readVarName = "stringJumpFastRead" + state.calculatoros.stringJumpFastVar++;
+
+        // The search algorithm is constructed as follows:
+        // - If the string is zero length, then run the no match handler.
+        // - Perform a binary search on each unique block prefix.
+        //   This is the float with BYTES_PER_FLOAT encoded in it.
+        //   If that prefix is unique, then run the handler.
+        //   Otherwise, if one of the values using the prefix is
+        //   the length of the check (in other words, it is the prefix itself),
+        //   then use that for the length check. Otherwise, just use noMatch.
+        //   Do the exact same binary search but this time on the second block.
+        //   If it still isn't unique, repeat.
+        const mergeAndSortAscPrefixes = (values: {floatValues: number[], code: string}[]) : {prefix: number, rest: number[][], code: string[]}[] => {
+            const prefixMap: Record<string, {rest: number[][], code: string[]}> = {};
+
+            for(const value of values) {
+                const prefix = value.floatValues[0];
+                const rest = value.floatValues.slice(1);
+
+                if(!(prefix in prefixMap)) {
+                    prefixMap[prefix] = {rest: [], code: []};
+                }
+
+                prefixMap[prefix].rest.push(rest);
+                prefixMap[prefix].code.push(value.code);
+            }
+
+            const valuesArr = Object.entries(prefixMap).map(([prefix, data]) => ({prefix: Number(prefix), rest: data.rest, code: data.code}));
+
+            valuesArr.sort((a, b) => a.prefix > b.prefix ? 1 : -1);
+
+            return valuesArr;
+        };
+
+        const binarySearch = (values: {prefix: number, rest: number[][], code: string[]}[], left: number, right: number, readPos: number, firstForPos: boolean) : string => {
+            // If we're not searching through anything, then just fall through
+            // to the check below.
+            if(values.length === 1) {
+                left = 0;
+                right = 0;
+            }
+
+            if(left === right || right < left) {
+                // If there's only a single code for this prefix, then we
+                // can run it.
+                // Otherwise, we'll need to start a new binary search using the next prefix
+                // as the first item in rest (for each value using this prefix).
+                const prefixData = values[left];
+                if(prefixData.code.length === 1) {
+                    return prefixData.code[0];
+                }
+
+                const newValues = prefixData.rest.map((rest, i) => ({floatValues: rest, code: prefixData.code[i]}));
+                const mergedNewValues = mergeAndSortAscPrefixes(newValues);
+
+                return binarySearch(mergedNewValues, 0, mergedNewValues.length - 1, readPos + 1, true);
+            }
+
+            // If we're the first piece of code that's touching this position, then we
+            // need to read it in first before the code below will be valid.
+            // We also need to do a bounds check here to prevent undefined behavior.
+            let outPrefix = "";
+            let outPostfix = "";
+            if(firstForPos) {
+                outPrefix = `if(${readPos} < ceil(${strLen}/BYTES_PER_FLOAT)) {
+                r_ead(${strPtr}, ${readPos}, &${readVarName});`;
+                outPostfix = `}` + (noMatch ? `else { ${noMatch} } ` : "");
+            }
+
+            // We can just use a simple comparison if there are two.
+            if(right - left === 1) {
+                return outPrefix + `if(${readVarName} == ${values[left].prefix}) { ${binarySearch(values, left, left, readPos, false)} } else { ${binarySearch(values, right, right, readPos, false)} }` + outPostfix;
+            }
+
+            const middle = Math.floor((right - left) / 2) + left;
+            return outPrefix + `if(${readVarName} < ${values[middle].prefix}) { ${binarySearch(values, left, middle - 1, readPos, false)} } else { ${binarySearch(values, middle, right, readPos, false)} }` + outPostfix;
+        };
+
+        // Now, we need to convert the given values into floats and feed them into
+        // the binary search above.
+        const values = checkPairs.map(pair => ({floatValues: fromManyBytes(pair.value.split("").map(char => char.charCodeAt(0)), 0), code: pair.block}));
+        const mergedValues = mergeAndSortAscPrefixes(values);
+
+        return binarySearch(mergedValues, 0, mergedValues.length - 1, 0, true);
     }
 };

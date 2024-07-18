@@ -2,7 +2,7 @@ import {TemplateArgs, TemplateBlock, TemplateContext} from "logimat";
 import {TemplateState} from "./types/TemplateState";
 
 export const ensureState = (state: TemplateState) => {
-    if (!state.hasOwnProperty("calculatoros")) state.calculatoros = {disks: {}, memory: {}};
+    if (!state.hasOwnProperty("calculatoros")) state.calculatoros = {disks: {}, memory: {}, stringJumpFastVar: 1};
 };
 
 //Context checks
