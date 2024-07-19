@@ -1,6 +1,5 @@
 // Import system API and other libraries.
-import!("lib/api.lm");
-import!("lib/string.lm");
+import!("lib/main.lm");
 
 // Import all programs.
 import!("write_test.lm");

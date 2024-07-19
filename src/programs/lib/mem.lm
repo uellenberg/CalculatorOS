@@ -1,0 +1,16 @@
+// Copies a chunk of memory from one pointer to another.
+// The data stored at the index specified by the from offset is copied
+// to the position specified by the to offset.
+// To copy everything, the offsets should be 0 and the length should be
+// the total number of floats to copy.
+stackfunction m_em_cpy(f_rom_ptr, t_o_ptr, f_rom_off, t_o_off, l_en) {
+    stackvar i;
+    stackvar readData;
+
+    while(i < l_en) {
+        r_ead(f_rom_ptr, f_rom_off + i, &readData);
+        w_rite(t_o_ptr, t_o_off + i, readData);
+
+        i = i + 1;
+    }
+}

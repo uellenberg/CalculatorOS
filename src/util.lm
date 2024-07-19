@@ -43,4 +43,120 @@ folder "Byte Operations" {
             p1 * (base ^ power) + p2 * (base ^ (power - 1))
         }
     }
+
+    display hidden = true;
+    export function e_mpty_byte_power(f_loat) {
+        const base = 256;
+
+        // This code assumes that bytes cannot be 0 if they
+        // contain a character, and the only zero bytes are at
+        // the very end of the float.
+
+        state = 0;
+
+        // Don't check the first digit because space is guaranteed
+        // and we already checked everything else.
+        // And the last digit is checked below, so don't check
+        // it either.
+        define!(IDX, 1);
+        iterate!({
+            // This does the biggest numbers last so that
+            // they get checked first (since the first
+            // if statement here runs last).
+
+            // Mod needs to use the higher digit which effectively
+            // gets rid of it.
+            // If we used this digit, then any values would just end up as 0.
+            if(mod(f_loat, base ^ (get!(IDX) + 1)) == 0) {
+                state = get!(IDX);
+            }
+
+            define!(IDX, IDX + 1);
+        }, BYTES_PER_FLOAT - 2);
+
+        if(f_loat == 0) {
+            state = BYTES_PER_FLOAT - 1;
+        }
+    }
+
+    // Appends a byte to the end of a byte array encoded
+    // as floats.
+    // The caller must ensure that the float has room
+    // for another byte.
+    export function a_ppend_byte(f_loat, b_yte) {
+        const base = 256;
+
+        // First, we need to get the index to append to.
+        const power = e_mpty_byte_power(f_loat);
+
+        f_loat + (b_yte * base ^ power)
+    }
+
+    // Appends several bytes to the end of a byte array encoded
+    // as floats.
+    // The caller must ensure that the float has room
+    // for these extra bytes.
+    export function a_ppend_bytes(f_loat, b_ytes) {
+        const base = 256;
+
+        // First, we need to get the index to append to.
+        const power = e_mpty_byte_power(f_loat);
+
+        f_loat + sum(n = 1; b_ytes.length) {
+            // The first byte should have the highest power, and
+            // it should also start at power, so the +1 is needed to offset it.
+            b_ytes[n] * (base ^ (power - n + 1))
+        }
+    }
+
+    // Takes in two floats and appends the bytes of the second
+    // float to the first float. This will return a list containing
+    // the new float as well as a float containing the remaining bytes,
+    // if there wasn't enough space.
+    // The caller MUST ensure that the first float is not completely filled up.
+    export function a_ppend_bytes_split(f_loat, a_dd_float) {
+        [a_ppend_bytes_split_1(f_loat, a_dd_float), a_ppend_bytes_split_2(f_loat, a_dd_float)]
+    }
+
+    // This is the same as a_ppend_bytes_split(...)[1]
+    export function a_ppend_bytes_split_1(f_loat, a_dd_float) {
+        const base = 256;
+
+        // First, we need to get the index to append to.
+        const power = e_mpty_byte_power(f_loat);
+
+        // Only add the number of bytes that the float can handle.
+        // For example, if power = 0, then we want to go from
+        // data * base^(BYTES_PER_FLOAT - 1) to data * base^power.
+        // This will move some bytes to the right of the decimal, so
+        // we need to floor them to make sure they don't affect the other bytes.
+        const appendPart = f_loat + floor(a_dd_float * base^(power -BYTES_PER_FLOAT + 1));
+
+        appendPart
+    }
+
+    // This is the same as a_ppend_bytes_split(...)[2]
+    export function a_ppend_bytes_split_2(f_loat, a_dd_float) {
+        const base = 256;
+
+        // First, we need to get the index to append to.
+        const power = e_mpty_byte_power(f_loat);
+
+        // Next, we need to collect the bytes that were stripped away.
+        // This just requires taking the mod of data with the smallest
+        // digit place that won't get stripped away.
+        // For example, if power = 1, then that means two bytes will be appended,
+        // so we need to mod by the second place from the right:
+        // base ^ (BYTES_PER_FLOAT - power - 1)
+        // This will extract the correct bytes, but they then need to be moved
+        // to the correct digit place.
+        // In this example, the leading digit looks like data * base^(BYTES_PER_FLOAT - power - 2)
+        // and needs to be turned into data * base^(BYTES_PER_FLOAT - 1)
+        // This can also be thought of as moving up by the number of digits moved, so multiplying
+        // by base^(power + 1).
+        // Both are equivalent.
+        const splitPart = mod(a_dd_float, base ^ (BYTES_PER_FLOAT - power - 1)) * base^(power + 1);
+
+        splitPart
+    }
 }

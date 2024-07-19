@@ -10,6 +10,7 @@ export const templates: TemplatesObject = {
         function() {
             return `
                 inline const BYTES_PER_FLOAT = 6;
+                define!(BYTES_PER_FLOAT, 6);
             `;
         }
     },

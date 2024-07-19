@@ -13,3 +13,62 @@ stackfunction s_tr_get_char(s_tr_ptr, i_dx, /* & */ o_ut) {
     // position of the remainder.
     *o_ut = g_et_byte(floatData, mod(i_dx, BYTES_PER_FLOAT));
 }
+
+// Copies the bytes stored in a float and appends them to the end of a string.
+// This may cause the string to be re-allocated.
+stackfunction s_tr_extend_with_float(/* & */ s_tr_ptr, /* & */ s_tr_len, /* & */ s_tr_cap, d_ata) {
+    // Calculate how many floats the string is currently using.
+    const floatLength = ceil(*s_tr_len / BYTES_PER_FLOAT);
+    // Calculate the actual capacity. Data is stored in blocks, so
+    // there may be more space allocated than is reported by capacity.
+    const trueCapacity = ceil(*s_tr_cap / MEMORY_main_BLOCK_SIZE) * MEMORY_main_BLOCK_SIZE;
+    // If this is at the current capacity (it's full), then we'll need to re-allocate in order to
+    // handle the extra float.
+    // Note that this approach is slightly inefficient as it could unnecessarily re-allocate, but
+    // only if a string already has all but one of its floats fully filled, and the last
+    // float is partially filled.
+    if(floatLength == trueCapacity) {
+        stackvar oldPtr;
+        oldPtr = *s_tr_ptr;
+
+        m_alloc(trueCapacity + 1, s_tr_ptr);
+        *s_tr_cap = trueCapacity + 1;
+
+        m_em_cpy(oldPtr, *s_tr_ptr, 0, 0, floatLength);
+
+        f_ree(oldPtr, trueCapacity);
+    }
+
+    // Next, we need to handle the following three cases:
+    // - All floats are fully filled up, so we just need to append this one directly.
+    // - The last float is partially filled up and has enough space for all the bytes.
+    // - The last float is partially filled up and does not have enough space for all the bytes.
+    //
+    // We can check the first just by seeing if the length is a multiple of BYTES_PER_FLOAT, or if it's zero.
+    if(mod(*s_tr_len, BYTES_PER_FLOAT) == 0) {
+        const writeOffset = *s_tr_len / BYTES_PER_FLOAT;
+        w_rite(*s_tr_ptr, writeOffset, d_ata);
+    } else {
+        // We can handle the last two cases efficiently with
+        // the a_ppend_bytes_split function.
+        // This will take in our last float and our float to add, and append
+        // them in such a way that all the bytes that can be added to the current
+        // float are, and the rest are put into their own float.
+        // This is split into two methods for the sake of efficiency.
+
+        // First, we need the data at the current float.
+        const readOffset = floor(*s_tr_len / BYTES_PER_FLOAT);
+
+        stackvar readData;
+        r_ead(*s_tr_ptr, readOffset, &readData);
+
+        const appended = a_ppend_bytes_split_1(readData, d_ata);
+        const split = a_ppend_bytes_split_2(readData, d_ata);
+
+        w_rite(*s_tr_ptr, readOffset, appended);
+        // Only write if we have to.
+        if(split != 0) {
+            w_rite(*s_tr_ptr, readOffset + 1, split);
+        }
+    }
+}
