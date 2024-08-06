@@ -9,6 +9,10 @@ folder "Byte Operations" {
         floor(pt1-floor(pt2)*base)
     }
 
+    export function g_et_bytes(f_loat) {
+        range(0, n_um_bytes(f_loat) - 1).map(idx => g_et_byte(f_loat, idx))
+    }
+
     export function g_et_two_byte(f_loat, i_ndex) {
         const base = 256*256;
         const len = BYTES_PER_FLOAT / 2;
@@ -77,6 +81,19 @@ folder "Byte Operations" {
         if(f_loat == 0) {
             state = BYTES_PER_FLOAT - 1;
         }
+    }
+
+    inline function n_um_bytes(f_loat) {
+        const len = BYTES_PER_FLOAT;
+
+        // e_mpty_byte_power gets the number of digits from the right - 1
+        // to where an empty spot is. So, that number + 1 is the first byte
+        // from the right.
+        // To get this byte's position from the left, we need to take the maximum number of bytes
+        // minus it, then subtract one.
+        // This number represents the last index from the left, so to get the length, we just
+        // need to add the one back.
+        len - (e_mpty_byte_power(f_loat) + 1)
     }
 
     // Appends a byte to the end of a byte array encoded
