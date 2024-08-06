@@ -83,17 +83,46 @@ folder "Byte Operations" {
         }
     }
 
-    inline function n_um_bytes(f_loat) {
+    display hidden = true;
+    export function n_um_bytes(f_loat) {
+        const base = 256;
         const len = BYTES_PER_FLOAT;
 
-        // e_mpty_byte_power gets the number of digits from the right - 1
-        // to where an empty spot is. So, that number + 1 is the first byte
-        // from the right.
-        // To get this byte's position from the left, we need to take the maximum number of bytes
-        // minus it, then subtract one.
-        // This number represents the last index from the left, so to get the length, we just
-        // need to add the one back.
-        len - (e_mpty_byte_power(f_loat) + 1)
+        // This code assumes that bytes cannot be 0 if they
+        // contain a character, and the only zero bytes are at
+        // the very end of the float.
+
+        // "Overridden" check for the largest digit, which is handled
+        // all the way at the bottom.
+        // If that check isn't true, and none of the others are true, then
+        // the only possibility is that only the largest byte is filled.
+        state = 1;
+
+        // Don't check the largest digit, since it's checked below.
+        define!(IDX, 1);
+        iterate!({
+            // This does the smallest numbers last so that
+            // they get checked first (since the first
+            // if statement here runs last).
+            // That's because bytes appear in higher positions first, so
+            // the first non-zero byte starting from the smallest position
+            // tells us how many total bytes there are.
+
+            // Check whether the current digit is used.
+            // If it is, then we found the length (which is one more than the index).
+            // Mod needs to use the higher digit which effectively
+            // gets rid of it.
+            // If we used this digit, then any values would just end up as 0.
+            if(mod(f_loat, base ^ (len - get!(IDX))) != 0) {
+                state = get!(IDX) + 1;
+            }
+
+            define!(IDX, IDX + 1);
+        }, BYTES_PER_FLOAT - 1);
+
+        if(f_loat == 0) {
+            state = 0;
+        }
     }
 
     // Appends a byte to the end of a byte array encoded
