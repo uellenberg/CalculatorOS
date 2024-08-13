@@ -1,0 +1,65 @@
+// This file can be imported multiple times.
+// It uses the following variables:
+// - KEYS is a string of each string to display.
+// - KEY_STRIP is a number (starting at 0) that represents which strip of keys we're on.
+// - MAX_LENGTH is the maximum number of keys on any strip.
+
+define!(KEY_H_OFFSET, 0);
+forEachChar!(KEYS, {
+    // CHAR becomes the character.
+    // CHARCODE becomes the character code (byte).
+
+    // Ensure that the h offset is captured, since templates
+    // can mess with ordering and cause every get to return
+    // the last value.
+    inline const key_pos_CHARCODE = {
+        const posX = KEYBOARD_LEFT_X + get!(KEY_H_OFFSET)*KEYBOARD_TEXT_WIDTH;
+        const posY = KEYBOARD_TOP_Y - get!(KEY_STRIP)*KEYBOARD_TEXT_HEIGHT;
+
+        // We need to offset by a certain amount in order to center the keys.
+        const centeredOffset = (get!(MAX_LENGTH) - stringLen!(KEYS)) * KEYBOARD_TEXT_WIDTH / 2;
+
+        (posX + centeredOffset, posY)
+    };
+
+    extendBehavior!("keyboard", {
+        setItemName!("k_eyboard_CHARCODE");
+        setItemDisplay!({
+            display folder = "Keyboard";
+            display hidden = true;
+            display label = "CHAR";
+            display size = width / 750;
+            display color = w_hite;
+        });
+        setVal!("keyboard_CHARCODE", { key_pos_CHARCODE });
+        // Tell Graphgame to make it an actual variable.
+        setMut!("keyboard_CHARCODE");
+
+        // Normally, we'd use noRegisterSetValAction here, but we won't
+        // because it'll unnecessarily blow up the number of expressions.
+        // The keyboard buffer represents "the user pressed this button", which is
+        // what noRegisterSetValAction essentially does internally, so it isn't needed.
+        display folder = "Keyboard";
+        action k_eyboard_set_CHARCODE = k_eyboard_buffer { string!("CHAR") }
+
+        behaviorCustom!({
+            display folder = "Keyboard";
+            display click = "k_eyboard_set_CHARCODE";
+            display color = g_ray;
+            polygon({
+                // The key is centered at key_pos_CHARCODE.
+                // In order to fully fill the space, we need to have the shape
+                // go 1/2 * KEYBOARD_TEXT_WIDTH to the left and right, and
+                // 1/2 * KEYBOARD_TEXT_HEIGHT to the top and bottom.
+                // We want a small gap between keys, so we'll go slightly less instead.
+                const keyScale = 3/8;
+                const distH = KEYBOARD_TEXT_WIDTH * keyScale;
+                const distV = KEYBOARD_TEXT_HEIGHT * keyScale;
+
+                key_pos_CHARCODE + [(-distH, -distV), (distH, -distV), (distH, distV), (-distH, distV)]
+            });
+        });
+    });
+
+    define!(KEY_H_OFFSET, KEY_H_OFFSET + 1);
+});

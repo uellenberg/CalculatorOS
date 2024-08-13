@@ -1,4 +1,4 @@
-import {ensureState, expressionCheck, getBlock, getString} from "./util";
+import {ensureState, expressionCheck, getAnyAsString, getBlock, getString} from "./util";
 import {TemplateState} from "./types/TemplateState";
 import {TemplateObject} from "logimat";
 import {fromManyBytes} from "./types/Float";
@@ -32,6 +32,23 @@ export const stringRaw: TemplateObject = {
         const value = getString(args, state, 0, "A value is required!");
 
         return JSON.stringify(value.split("").map(char => char.charCodeAt(0)));
+    }
+};
+
+/**
+ * Returns the number of characters in a string.
+ * Usage: stringLen!(value: string);
+ */
+export const stringLen: TemplateObject = {
+    function: (args, state: TemplateState, context) => {
+        ensureState(state);
+        expressionCheck(context);
+
+        const value = getString(args, state, 0, "A value is required!");
+
+        // Ensure that this length matches the other string methods,
+        // so split it first.
+        return value.split("").length.toString();
     }
 };
 
@@ -79,6 +96,23 @@ export const forEachChar: TemplateObject = {
         }
 
         return before + out + after;
+    }
+};
+
+/**
+ * Returns a piece of code with a certain string replaced by
+ * another one.
+ * Usage: replace!(find: string, replace: string, code: Block);
+ */
+export const replace: TemplateObject = {
+    function: (args, state: TemplateState, context) => {
+        ensureState(state);
+
+        const find = getAnyAsString(args, state, 0, "A search string is required!");
+        const replace = getAnyAsString(args, state, 1, "A replace string is required!");
+        const code = getBlock(args, state, 2, "A piece of code to run is required!");
+
+        return code.replaceAll(find, replace);
     }
 };
 

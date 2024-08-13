@@ -1,0 +1,68 @@
+// This creates an extra key after those created by keyboard_keys.
+// The following variables are used, in addition to those used in keyboard_keys:
+// - KEY is a string containing the text to display for the key.
+// - KEYCODE is the string to use as the keycode when the button is pressed.
+// - KEY_OFFSET is the horizontal offset for this key.
+// - EXTRA_KEY_IDX is a STRING containing a single unique digit for this extra key.
+
+// This is a bit of a hacky solution.
+// We need to be able to capture the arguments above,
+// and to do that, we need an inline const.
+// In order to assign it a unique name, we can get a single unique
+// character and have forEachChar replace it for us.
+forEachChar!(EXTRA_KEY_IDX, {
+    // CHAR becomes the character.
+    // CHARCODE becomes the character code (byte).
+
+    // This needs to be done here in order to ensure that the arguments
+    // aren't overridden, as templates can mess with how things are ordered.
+    inline const extra_key_pos_CHAR = {
+        const posX = KEYBOARD_LEFT_X + get!(KEY_H_OFFSET)*KEYBOARD_TEXT_WIDTH;
+        const posY = KEYBOARD_TOP_Y - get!(KEY_STRIP)*KEYBOARD_TEXT_HEIGHT;
+
+        // We need to offset by a certain amount in order to center the keys.
+        const centeredOffset = (get!(MAX_LENGTH) - stringLen!(KEYS)) * KEYBOARD_TEXT_WIDTH / 2;
+
+        (posX + centeredOffset + get!(KEY_OFFSET), posY)
+    };
+
+    // This is the same idea as above, except we're dealing
+    // with strings so we need to put them into template variables.
+    define!(SAVED_ARG_EXTRA_CHAR_KEY, KEY);
+    define!(SAVED_ARG_EXTRA_CHAR_KEYCODE, KEYCODE);
+
+    extendBehavior!("keyboard", {
+        setItemName!("k_eyboard_extra_CHAR");
+        setItemDisplay!({
+            display folder = "Keyboard";
+            display hidden = true;
+            replace!("REPLACE_KEY", SAVED_ARG_EXTRA_CHAR_KEY, { display label = "REPLACE_KEY"; });
+            display size = width / 750;
+            display color = w_hite;
+        });
+        setVal!("keyboard_extra_CHAR", { extra_key_pos_CHAR });
+        // Tell Graphgame to make it an actual variable.
+        setMut!("keyboard_extra_CHAR");
+
+        display folder = "Keyboard";
+        action k_eyboard_extra_set_CHAR = k_eyboard_buffer { string!(SAVED_ARG_EXTRA_CHAR_KEYCODE) }
+
+        behaviorCustom!({
+            display folder = "Keyboard";
+            display click = "k_eyboard_extra_set_CHAR";
+            display color = g_ray;
+            polygon({
+                // The key is centered at key_pos_CHARCODE.
+                // In order to fully fill the space, we need to have the shape
+                // go 1/2 * KEYBOARD_TEXT_WIDTH to the left and right, and
+                // 1/2 * KEYBOARD_TEXT_HEIGHT to the top and bottom.
+                // We want a small gap between keys, so we'll go slightly less instead.
+                const keyScale = 3/8;
+                const distH = KEYBOARD_TEXT_WIDTH * keyScale * stringLen!(SAVED_ARG_EXTRA_CHAR_KEY);
+                const distV = KEYBOARD_TEXT_HEIGHT * keyScale;
+
+                extra_key_pos_CHAR + [(-distH, -distV), (distH, -distV), (distH, distV), (-distH, distV)]
+            });
+        });
+    });
+});

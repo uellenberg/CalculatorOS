@@ -1,0 +1,50 @@
+createBehavior!("keyboard", {
+    setDefaultDisplay!({ display folder = "Keyboard"; });
+
+    // Create a place to store the keyboard's input before
+    // it's handled by process.
+    // If this is -1, it means there's no input.
+    // For future implementation reasons (namely piping), this
+    // is represented as bytes encoded in a single float.
+    setItemName!("k_eyboard_buffer");
+    setVal!("keyboardBuffer", -1);
+
+    // After everything's done, clear the buffer.
+    setValAction!("keyboardBuffer", { -1 }, 500);
+});
+
+// Import the keyboard_key file multiple times to run it multiple times.
+// This will create a strip of keys
+define!(KEYS, "qwertyuiop");
+define!(KEY_STRIP, 0);
+define!(MAX_LENGTH, stringLen!(KEYS));
+import!("keyboard_keys.lm");
+
+define!(KEYS, "asdfghjkl");
+define!(KEY_STRIP, 1);
+import!("keyboard_keys.lm");
+
+define!(KEY, "Enter");
+define!(KEYCODE, "\n");
+define!(KEY_OFFSET, 1);
+define!(EXTRA_KEY_IDX, "0");
+import!("extra_key.lm");
+
+define!(KEYS, "zxcvbnm");
+define!(KEY_STRIP, 2);
+import!("keyboard_keys.lm");
+
+// Create a fake strip at the bottom for the space bar.
+define!(KEYS, "");
+define!(KEY_STRIP, 3);
+import!("keyboard_keys.lm");
+
+define!(KEY, "       ");
+define!(KEYCODE, " ");
+define!(KEY_OFFSET, 0);
+define!(EXTRA_KEY_IDX, "1");
+import!("extra_key.lm");
+
+extendPrefab!("main", {
+    useBehaviorPrefab!("keyboard");
+});

@@ -18,9 +18,10 @@ import!("colors.lm");
 // TODO: Create background.
 // Create terminal.
 import!("display/main.lm");
+// Create keyboard.
+import!("keyboard/main.lm");
 // Create programs.
 import!("programs/main.lm");
-// TODO: Create keyboard.
 // Create kernel.
 import!("kernel/main.lm");
 
