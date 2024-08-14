@@ -1,0 +1,80 @@
+display folder = "Shell Program";
+stackfunction s_hell() {
+    // Main loop:
+    // - Read from stdin into a buffer string.
+    // - Track the previous length of the string on each read.
+    // - Search for the new characters for a newline.
+    //   Print out each character to stdout.
+    //   If found, split into an eval string, then handle the eval string as a command.
+    const initialAllocSize = 10;
+
+    stackvar readStrPtr;
+    stackvar readStrLen;
+    stackvar readStrCap;
+
+    readStrLen = 0;
+    readStrCap = initialAllocSize;
+    m_alloc(initialAllocSize, &readStrCap);
+
+    stackvar evalStrPtr;
+    stackvar evalStrLen;
+    stackvar evalStrCap;
+
+    evalStrLen = 0;
+    evalStrCap = initialAllocSize;
+    m_alloc(initialAllocSize, &evalStrPtr);
+
+    stackvar prevLen;
+    prevLen = 0;
+
+    loop {
+        r_ead_stdin(&readStrPtr, &readStrLen, &readStrCap);
+
+        // Use prevLen as the loop variable.
+        while(prevLen < readStrLen) {
+            stackvar curByte;
+            // String indices start at 0.
+            s_tr_get_char(readStrPtr, prevLen, &curByte);
+
+            p_rint(e_ncode_bytes([curByte]));
+
+            // If it's a newline, then split it here
+            // and handle it.
+            if(curByte == char!("\n")) {
+                // We can split efficiently by swapping the strings.
+                // This will put every previous character into the eval string
+                // and effectively clear the eval string.
+                stackvar swapTemp;
+
+                swapTemp = readStrPtr;
+                readStrPtr = evalStrPtr;
+                evalStrPtr = swapTemp;
+
+                swapTemp = readStrCap;
+                readStrCap = evalStrCap;
+                evalStrCap = swapTemp;
+
+                // The read string should be cleared now, so
+                // we'll just set its length to zero.
+                evalStrLen = readStrLen;
+                readStrLen = 0;
+
+                stringJumpFast!("readStrPtr", "readStrLen",
+                    "ping", {
+                        p_rint(string!("pong!"));
+                    },
+                    "testcmd", {
+                        p_rint(string!("Works"));
+                    },
+                    "echo", {
+                        p_rint(string!("doesnt"));
+                    }
+                );
+            } else {
+                s_tr_extend_with_float(&readStrPtr, &readStrLen, &readStrCap, e_ncode_bytes([curByte]));
+            }
+
+            prevLen = prevLen + 1;
+        }
+    }
+}

@@ -84,7 +84,7 @@ A process can perform a system call by setting the first number in its allocated
 
 • (virtual) Process Argument.
 
-• (virtual) Read stdin.
+• 12 - Read stdin. This will atomically copy the stdin into the syscall return space and clear the relevant part of the stdin.
 
 • (virtual) Read stdout.
 

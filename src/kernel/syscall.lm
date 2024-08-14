@@ -17,6 +17,7 @@ inline const PRINT_SYSCALL_ID = 4;
 inline const MEMALLOC_SYSCALL_ID = 5;
 inline const MEMDEALLOC_SYSCALL_ID = 7;
 inline const MEMWRITE_SYSCALL_ID = 6;
+inline const READ_STDIN_SYSCALL_ID = 12;
 
 createBehavior!("syscall", {
     setDefaultDisplay!({ display folder = "Syscalls"; });
@@ -343,10 +344,46 @@ createBehavior!("syscallMemWrite", {
     });
 });
 
+createBehavior!("syscallReadStdin", {
+    // This syscall completes in one go, so it doesn't need to be marked
+    // as active.
+
+    setDefaultDisplay!({ display folder = "Syscalls"; });
+
+    // Return the current data in the stdin if it exists.
+    setValAction!("base.syscall.syscallReturn", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == READ_STDIN_SYSCALL_ID) {
+            // Currently, stdin doesn't exist.
+            // Instead, we'll use the keyboard directly.
+            // TODO: Maybe implement actual stdin handling.
+            getVal!("base.keyboard.keyboardBuffer")
+        } else {
+            syscallReturn
+        }
+    }, 110, true, true);
+
+    // Clear the keyboard buffer after reading from it.
+    setValAction!("base.keyboard.keyboardBuffer", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == READ_STDIN_SYSCALL_ID) {
+            // No data (no bytes)
+            0
+        } else {
+            keyboardBuffer
+        }
+    }, 111);
+});
+
 extendPrefab!("main", {
     useBehaviorPrefab!("syscall");
     useBehaviorPrefab!("syscallPrint");
     useBehaviorPrefab!("syscallMemAlloc");
     useBehaviorPrefab!("syscallMemDealloc");
     useBehaviorPrefab!("syscallMemWrite");
+    useBehaviorPrefab!("syscallReadStdin");
 });

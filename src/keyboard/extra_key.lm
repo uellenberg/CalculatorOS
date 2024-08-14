@@ -45,7 +45,7 @@ forEachChar!(EXTRA_KEY_IDX, {
         setMut!("keyboard_extra_CHAR");
 
         display folder = "Keyboard";
-        action k_eyboard_extra_set_CHAR = k_eyboard_buffer { string!(SAVED_ARG_EXTRA_CHAR_KEYCODE) }
+        action k_eyboard_extra_set_CHAR = k_eyboard_buffer { string!(SAVED_ARG_EXTRA_CHAR_KEYCODE)[1] }
 
         behaviorCustom!({
             display folder = "Keyboard";

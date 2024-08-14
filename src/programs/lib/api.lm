@@ -3,6 +3,7 @@ folder "System API" {
     // the value specified by r_et.
     // This needs to be a separate function because
     // syscalls are only handled at breakpoints.
+    // TODO: Can this function be removed?
     stackfunction s_yscall_ret(/* & */ r_et) {
         *r_et = stack[SYSCALL_RETURN_POSITION];
     }
@@ -65,5 +66,15 @@ folder "System API" {
 
         // Add one to get the index into Desmos' range.
         *r_et = m_emory_main_read(dataIndex + 1);
+    }
+
+    // Reads part of the stdin into a string.
+    // Calling this repeatedly may add more data to the string.
+    stackfunction r_ead_stdin(/* & */ s_tr_ptr, /* & */ s_tr_len, /* & */ s_tr_cap) {
+        stack[3] = READ_STDIN_SYSCALL_ID;
+        // Don't write if there's no data.
+        if(stack[SYSCALL_RETURN_POSITION] != 0) {
+            s_tr_extend_with_float(s_tr_ptr, s_tr_len, s_tr_cap, stack[SYSCALL_RETURN_POSITION]);
+        }
     }
 }

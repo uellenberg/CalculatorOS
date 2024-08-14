@@ -281,6 +281,7 @@ export const stringJumpFast: TemplateObject = {
         const values = checkPairs.map(pair => ({floatValues: fromManyBytes(pair.value.split("").map(char => char.charCodeAt(0)), 0), code: pair.block}));
         const mergedValues = mergeAndSortAscPrefixes(values);
 
-        return binarySearch(mergedValues, 0, mergedValues.length - 1, 0, true);
+        return `stackvar ${readVarName};
+${binarySearch(mergedValues, 0, mergedValues.length - 1, 0, true)}`;
     }
 };

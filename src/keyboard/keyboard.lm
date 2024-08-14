@@ -3,14 +3,11 @@ createBehavior!("keyboard", {
 
     // Create a place to store the keyboard's input before
     // it's handled by process.
-    // If this is -1, it means there's no input.
+    // If this is 0, it means there's no input (no bytes).
     // For future implementation reasons (namely piping), this
     // is represented as bytes encoded in a single float.
     setItemName!("k_eyboard_buffer");
-    setVal!("keyboardBuffer", -1);
-
-    // After everything's done, clear the buffer.
-    setValAction!("keyboardBuffer", { -1 }, 500);
+    setVal!("keyboardBuffer", 0);
 });
 
 // Import the keyboard_key file multiple times to run it multiple times.

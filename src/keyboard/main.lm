@@ -1,5 +1,5 @@
-inline const KEYBOARD_LEFT_X = -3;
-inline const KEYBOARD_TOP_Y = -4;
+inline const KEYBOARD_LEFT_X = -2.5;
+inline const KEYBOARD_TOP_Y = -2.5;
 inline const KEYBOARD_TEXT_WIDTH = 0.35;
 inline const KEYBOARD_TEXT_HEIGHT = 0.4;
 
