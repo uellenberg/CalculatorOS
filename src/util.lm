@@ -138,6 +138,22 @@ folder "Byte Operations" {
         f_loat + (b_yte * base ^ power)
     }
 
+    // Appends a byte to the end of a byte array encoded
+    // as floats.
+    // If there isn't room, then this byte is dropped.
+    export function t_ry_append_byte(f_loat, b_yte) {
+        const base = 256;
+
+        // First, we need to get the index to append to.
+        const power = e_mpty_byte_power(f_loat);
+
+        if(n_um_bytes(f_loat) == BYTES_PER_FLOAT) {
+            f_loat
+        } else {
+            f_loat + (b_yte * base ^ power)
+        }
+    }
+
     // Appends several bytes to the end of a byte array encoded
     // as floats.
     // The caller must ensure that the float has room

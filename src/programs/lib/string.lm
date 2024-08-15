@@ -71,4 +71,6 @@ stackfunction s_tr_extend_with_float(/* & */ s_tr_ptr, /* & */ s_tr_len, /* & */
             w_rite(*s_tr_ptr, readOffset + 1, split);
         }
     }
+
+    *s_tr_len = *s_tr_len + n_um_bytes(d_ata);
 }

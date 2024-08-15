@@ -1,13 +1,4 @@
 folder "System API" {
-    // Places the return of a syscall into
-    // the value specified by r_et.
-    // This needs to be a separate function because
-    // syscalls are only handled at breakpoints.
-    // TODO: Can this function be removed?
-    stackfunction s_yscall_ret(/* & */ r_et) {
-        *r_et = stack[SYSCALL_RETURN_POSITION];
-    }
-
     // Takes in several bytes encoded as a float and prints it to the
     // standard output.
     stackfunction p_rint(b_ytes) {
@@ -19,7 +10,9 @@ folder "System API" {
     stackfunction m_alloc(s_ize, /* & */ r_et) {
         stack[4] = s_ize;
         stack[3] = MEMALLOC_SYSCALL_ID;
-        s_yscall_ret(r_et);
+
+        *r_et = stack[SYSCALL_RETURN_POSITION];
+        stack[SYSCALL_RETURN_POSITION] = 0;
     }
 
     // Takes in a memory pointer and its size (in floats) and frees it.
@@ -68,13 +61,13 @@ folder "System API" {
         *r_et = m_emory_main_read(dataIndex + 1);
     }
 
-    // Reads part of the stdin into a string.
-    // Calling this repeatedly may add more data to the string.
-    stackfunction r_ead_stdin(/* & */ s_tr_ptr, /* & */ s_tr_len, /* & */ s_tr_cap) {
+    // Reads the stdin and returns the float stored in it.
+    // This may include multiple characters, or none (if the returned value is 0).
+    // To append this to a string, use s_tr_extend_with_float.
+    stackfunction r_ead_stdin(/* & */ r_et) {
         stack[3] = READ_STDIN_SYSCALL_ID;
-        // Don't write if there's no data.
-        if(stack[SYSCALL_RETURN_POSITION] != 0) {
-            s_tr_extend_with_float(s_tr_ptr, s_tr_len, s_tr_cap, stack[SYSCALL_RETURN_POSITION]);
-        }
+
+        *r_et = stack[SYSCALL_RETURN_POSITION];
+        stack[SYSCALL_RETURN_POSITION] = 0;
     }
 }

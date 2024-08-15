@@ -14,7 +14,7 @@ stackfunction s_hell() {
 
     readStrLen = 0;
     readStrCap = initialAllocSize;
-    m_alloc(initialAllocSize, &readStrCap);
+    m_alloc(initialAllocSize, &readStrPtr);
 
     stackvar evalStrPtr;
     stackvar evalStrLen;
@@ -24,17 +24,19 @@ stackfunction s_hell() {
     evalStrCap = initialAllocSize;
     m_alloc(initialAllocSize, &evalStrPtr);
 
-    stackvar prevLen;
-    prevLen = 0;
-
     loop {
-        r_ead_stdin(&readStrPtr, &readStrLen, &readStrCap);
+        stackvar readBuffer;
+        stackvar readBufferLen;
+
+        r_ead_stdin(&readBuffer);
+        readBufferLen = n_um_bytes(readBuffer);
+
+        stackvar i;
+        i = 0;
 
         // Use prevLen as the loop variable.
-        while(prevLen < readStrLen) {
-            stackvar curByte;
-            // String indices start at 0.
-            s_tr_get_char(readStrPtr, prevLen, &curByte);
+        while(i < readBufferLen) {
+            const curByte = g_et_byte(readBuffer, i);
 
             p_rint(e_ncode_bytes([curByte]));
 
@@ -59,22 +61,22 @@ stackfunction s_hell() {
                 evalStrLen = readStrLen;
                 readStrLen = 0;
 
-                stringJumpFast!("readStrPtr", "readStrLen",
+                stringJumpFast!("evalStrPtr", "evalStrLen",
                     "ping", {
-                        p_rint(string!("pong!"));
+                        p_rint(string!("pong!")[1]);
                     },
                     "testcmd", {
-                        p_rint(string!("Works"));
+                        p_rint(string!("Works")[1]);
                     },
                     "echo", {
-                        p_rint(string!("doesnt"));
+                        p_rint(string!("doesnt")[1]);
                     }
                 );
             } else {
                 s_tr_extend_with_float(&readStrPtr, &readStrLen, &readStrCap, e_ncode_bytes([curByte]));
             }
 
-            prevLen = prevLen + 1;
+            i = i + 1;
         }
     }
 }

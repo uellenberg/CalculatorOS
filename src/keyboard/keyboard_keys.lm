@@ -40,7 +40,7 @@ forEachChar!(KEYS, {
         // The keyboard buffer represents "the user pressed this button", which is
         // what noRegisterSetValAction essentially does internally, so it isn't needed.
         display folder = "Keyboard";
-        action k_eyboard_set_CHARCODE = k_eyboard_buffer { string!("CHAR")[1] }
+        action k_eyboard_set_CHARCODE = k_eyboard_buffer { t_ry_append_byte(k_eyboard_buffer, char!("CHAR")) }
 
         behaviorCustom!({
             display folder = "Keyboard";

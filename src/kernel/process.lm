@@ -224,24 +224,27 @@ createBehavior!("process", {
     }, 412, true, true);
 
     helper!({
-        // Clears all syscall data in a stack.
+        // Clears all syscall data in a stack, and moves
+        // the syscall's return into the process' stack.
         display folder = "Process Manager";
         export function c_lear_syscall(s_tack) {
             let newStack = s_tack;
-            // Clear values stack[3] to stack[3 + LENGTH - 1].
-            define!(STACK_IDX, 3);
-            iterate!({
-                newStack[get!(STACK_IDX)] = 0;
-
-                define!(STACK_IDX, STACK_IDX + 1);
-            }, STACK_LENGTH);
+            // Clear only stack[3] because it triggers a syscall to run.
+            // Syscall arguments don't need to be cleared because they won't be used.
+            newStack[3] = 0;
 
             const syscallReturn = {
                 selectBehavior!("syscall", { state = getValSelect!("syscall.syscallReturn"); });
             };
 
             // Set the syscall return.
-            // Only override if there's a new syscall return.
+            // The process is responsible for clearing
+            // this return value after it's done using it, so
+            // if the return value actually is zero then we don't
+            // need to write it, because the corresponding stack space
+            // should also be zero.
+            // Because of this, we can use zero to mean that the stack space
+            // shouldn't be updated (to give the process time to read from it).
             newStack[SYSCALL_RETURN_POSITION] = syscallReturn == 0 ? newStack[SYSCALL_RETURN_POSITION] : syscallReturn;
 
             newStack
