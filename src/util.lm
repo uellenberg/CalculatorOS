@@ -221,4 +221,20 @@ folder "Byte Operations" {
 
         splitPart
     }
+
+    // Extracts the bytes stored inside a float from a starting index
+    // to an ending index (exclusive).
+    // This will return a new list of bytes, encoded as a byte.
+    export function b_yte_slice(f_loat, f_rom, t_o) {
+        const base = 256;
+
+        // From involves a mod to remove the higher part of the float.
+        // Then, we'll need to multiply to move that part up.
+        // To remove the lower part, we just need to divide, floor, then re-multiply
+        // in order to zero that part.
+        const removedUpper = mod(f_loat, base ^ (BYTES_PER_FLOAT - f_rom)) * (base ^ f_rom);
+        const removedLower = floor(removedUpper / (base ^ (BYTES_PER_FLOAT - t_o))) * (base ^ (BYTES_PER_FLOAT - t_o));
+
+        removedLower
+    }
 }

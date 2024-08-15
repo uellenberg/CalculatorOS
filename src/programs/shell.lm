@@ -29,20 +29,33 @@ stackfunction s_hell() {
         stackvar readBufferLen;
 
         r_ead_stdin(&readBuffer);
+        p_rint(readBuffer);
+
         readBufferLen = n_um_bytes(readBuffer);
 
         stackvar i;
         i = 0;
 
-        // Use prevLen as the loop variable.
+        // The biggest bottleneck is writing to memory, so
+        // we want to avoid it as much as possible.
+        // To do that, we'll only write when we encounter a newline,
+        // or at the very end of the while loop.
+        // This variable represents the position that we should start reading at.
+        stackvar readStart;
+        readStart = 0;
+
         while(i < readBufferLen) {
             const curByte = g_et_byte(readBuffer, i);
-
-            p_rint(e_ncode_bytes([curByte]));
 
             // If it's a newline, then split it here
             // and handle it.
             if(curByte == char!("\n")) {
+                // Write all the text from readStart to right before the newline
+                // into the read buffer.
+                // Then, we'll move readStart up for the next read.
+                s_tr_extend_with_float(&readStrPtr, &readStrLen, &readStrCap, b_yte_slice(readBuffer, readStart, i));
+                readStart = i + 1;
+
                 // We can split efficiently by swapping the strings.
                 // This will put every previous character into the eval string
                 // and effectively clear the eval string.
@@ -72,11 +85,14 @@ stackfunction s_hell() {
                         p_rint(string!("doesnt")[1]);
                     }
                 );
-            } else {
-                s_tr_extend_with_float(&readStrPtr, &readStrLen, &readStrCap, e_ncode_bytes([curByte]));
             }
 
             i = i + 1;
+        }
+
+        // Try reading in the last section.
+        if(readStart < BYTES_PER_FLOAT) {
+            s_tr_extend_with_float(&readStrPtr, &readStrLen, &readStrCap, b_yte_slice(readBuffer, readStart, BYTES_PER_FLOAT));
         }
     }
 }
