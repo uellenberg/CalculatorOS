@@ -6,11 +6,11 @@
 define!(NUM_PROCESSES, 2);
 
 // Processes have 10 floats of empty space for syscalls, plus one extra for syscall returns.
-inline const DEFAULT_PROCESS_STACK = [-1, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 14, 0, 0, 0, 0, 0, 0, 0, 0];
-define!(STACK_LENGTH, 10);
+inline const DEFAULT_PROCESS_STACK = [-1, 7, 0, 0, 0, 0, -1, 7, 0, 0, 0, 0, 0, 0, 0, 0];
+define!(STACK_LENGTH, 3);
 inline const SYSCALL_STARTING_INDEX = 3;
 inline const SYSCALL_LENGTH = get!(STACK_LENGTH);
-inline const SYSCALL_RETURN_POSITION = 13;
+inline const SYSCALL_RETURN_POSITION = 6;
 
 createBehavior!("processManager", {
     setDefaultDisplay!({ display folder = "Process Manager"; });

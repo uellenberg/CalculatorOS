@@ -1,6 +1,6 @@
 import {BYTES_PER_FLOAT} from "../index";
 
-export const MEMORY_BLOCK_SIZE = 100;
+export const MEMORY_BLOCK_SIZE = 5;
 
 export class Memory {
     public name: string;
@@ -23,7 +23,7 @@ export class Memory {
         //   in order to get the starting point of the block.
         // - An occupied blocks list, which stores the block IDs as numbers,
         //   so each item in the list is a single ID.
-        const HEADER_BLOCKS_SIZE = 5;
+        const HEADER_BLOCKS_SIZE = 2;
         const HEADER_SIZE = 1 + HEADER_BLOCKS_SIZE;
 
         // Now, generate the data and helpers for the memory.

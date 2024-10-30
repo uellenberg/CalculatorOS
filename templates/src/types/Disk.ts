@@ -28,10 +28,10 @@ export class Disk {
         // - An occupied blocks list, which stores the block IDs as numbers,
         //   so each item in the list is a single ID.
         const HEADER_NAME_SIZE = 10;
-        const HEADER_BLOCKS_SIZE = 5;
+        const HEADER_BLOCKS_SIZE = 2;
         const HEADER_SIZE = 1 + HEADER_NAME_SIZE + HEADER_BLOCKS_SIZE;
 
-        const BLOCK_SIZE = 100;
+        const BLOCK_SIZE = 10;
 
         const table = [];
         const data = [];
