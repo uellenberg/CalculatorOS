@@ -83,6 +83,9 @@ stackfunction s_hell() {
                     },
                     "echo", {
                         p_rint(string!("doesnt")[1]);
+                    },
+                    "ls", {
+                        l_s_cmd();
                     }
                 );
             }

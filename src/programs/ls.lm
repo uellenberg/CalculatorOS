@@ -1,0 +1,29 @@
+display folder = "ls Command";
+stackfunction l_s_cmd() {
+    stackvar i;
+    i = 0;
+    const num_headers = floor(10000 / DISK_main_HEADER_SIZE);
+
+    // Go through each file record.
+    while(i < num_headers && !isNaN(d_isk_main_header[1 + i * DISK_main_HEADER_SIZE])) {
+        // Print out valid files.
+        if(d_isk_main_header[1 + i * DISK_main_HEADER_SIZE] == 1) {
+            stackvar j;
+            j = 0;
+
+            // Offset by the isActive byte, as well as
+            // by Desmos' starting list index.
+            const nameStart = 1 + i * DISK_main_HEADER_SIZE + 1;
+
+            // Output each part of the file's name.
+            while(d_isk_main_header[nameStart + j] != 0 && j < DISK_main_HEADER_NAME_SIZE) {
+                p_rint(d_isk_main_header[nameStart + j]);
+                j = j + 1;
+            }
+
+            p_rint(string!("\n")[1]);
+        }
+
+        i = i + 1;
+    }
+}

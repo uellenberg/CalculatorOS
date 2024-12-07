@@ -3,6 +3,7 @@ import!("lib/main.lm");
 
 // Import all programs.
 import!("shell.lm");
+import!("ls.lm");
 
 // Register programs.
 display folder = "Programs";
