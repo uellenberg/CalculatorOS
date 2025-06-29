@@ -1,8 +1,18 @@
 # CalculatorOS
 
+[Click here to try it out!](https://www.desmos.com/calculator/uurnpzddjz)
+
 NOTE: This project is no longer being developed due to performance issues. Namely, as more and more states are created by different stackfunctions, Desmos appears to execute their corresponding list actions before discarding the result, even if they aren't the state currently being executed. I have not found a way to overcome this problem. Currently, the following are implemented: console display, kernel loop, processes, process switching, syscall interface, printing, memory handling (with allocation, reading, writing, and deallocation), basic disk handling (currently read-only), and some simple test programs (including a basic shell).
 
 I want to implement an operating system in the Desmos graphing calculator. It will feature disk and memory allocation, processes, threading (likely implemented as child processes), interacting with hardware devices (terminal, keyboard, possibly internet), and environment variables. It will also allow running a program on start up, routing that program's standard input and output to the terminal and keyboard, and allowing it to access the inputs and outputs of its child processes as buffers. Programs will either be native (in which case they are given a virtual file in the immutable “/bin” directory), or are text-based with a shebang specifying the program responsible for running them (in which case they are stored in the “/usr/bin” directory, which is mutable). The default shell program (which will be native) will function similar to the bash shell, as much as is reasonably possible.
+
+# How to Compile
+
+Use [Graphgame Studio](https://graphgame.js.org), and from the GitHub menu, clone this repository. Then, open the directory and click on `src/main.ln` (or any file within it), and click the "Compile" button in the bottom right corner.
+
+To use it, scroll down to the "Programs" folder, and run the program you want to launch. This will assign it to a process, and begin execution.
+
+Programs are located in the `src/programs` directory. There are some programs which are not included by default, such as the expression evaluator (which is a recursive descent expression parser and evaluator) and the buffer overflow program (which demonstrates a buffer overflow inside the OS). To use these, open `src/programs/main.lm`, import the program you want to use, register it into the `p_rograms` list (follow the example of the shell program). Next, copy the `r_un_shell` action (include the display line above it as well), give it a new name (e.g., `r_un_expression_eval`), and change the program it references to the one you just added. For example, if your programs list looks like `export const p_rograms = [stackid(s_hell), stackid(e_xpression_eval)];`, then change the line in your action to look like `newStack[1] = p_rograms[2];` (note that Desmos lists are 1-indexed, so this refers to the expression eval program).
 
 # Language Considerations
 
