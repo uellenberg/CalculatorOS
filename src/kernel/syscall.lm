@@ -121,8 +121,31 @@ createBehavior!("syscallMemAlloc", {
             const indices = range(1, numHeaderBlocks);
             // Filter all of the indices that have their
             // active byte set to 0 (or they don't exist).
-            const filteredIndices = indices.filter(idx => (1 + MEMORY_main_HEADER_SIZE*(idx - 1)) > length(m_emory_main_header) || !m_emory_main_header[1 + MEMORY_main_HEADER_SIZE*(idx - 1)]);
+            // Previously, these were both in a single filter,
+            // but indexing an array by an array of indices does
+            // not produce undefined when indexing out of bounds,
+            // which caused the array sizes to be different.
+            // This caused issues with the piecewise that
+            // it gets compiled to, and broke memory allocation.
+            //
+            // Previous code (included for the purposes of documenting
+            // this behavior):
+            // const filteredIndices = indices.filter(idx => (1 + MEMORY_main_HEADER_SIZE*(idx - 1)) > length(m_emory_main_header) || !m_emory_main_header[1 + MEMORY_main_HEADER_SIZE*(idx - 1)]);
+            //
+            // We include the active byte check first, to favor
+            // lower indices, and this join is always safe
+            // because these ranges are mutually exclusive, and
+            // so won't exceed the maximum array size.
+            const filteredIndices = join(
+                indices.filter(idx => m_emory_main_header[1 + MEMORY_main_HEADER_SIZE*(idx - 1)] == 0),
+                indices.filter(idx => (1 + MEMORY_main_HEADER_SIZE*(idx - 1)) > length(m_emory_main_header))
+            );
 
+            // This returns the ID of the memory block, not
+            // its index in the header itself.
+            // That's why we aren't adjusting it like 1 + MEMORY_main_HEADER_SIZE*(idx - 1),
+            // as seen above.
+            // This adjustment is done by the user of this value, if needed.
             filteredIndices[1]
         }
 
