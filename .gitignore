@@ -6,3 +6,4 @@ coverage
 yarn-error.log
 package-lock.json
 *.iml
+templates/README.md
