@@ -18,6 +18,7 @@ inline const MEMALLOC_SYSCALL_ID = 5;
 inline const MEMDEALLOC_SYSCALL_ID = 7;
 inline const MEMWRITE_SYSCALL_ID = 6;
 inline const READ_STDIN_SYSCALL_ID = 12;
+inline const FORK_SYSCALL_ID = 13;
 
 createBehavior!("syscall", {
     setDefaultDisplay!({ display folder = "Syscalls"; });
@@ -402,6 +403,47 @@ createBehavior!("syscallReadStdin", {
     }, 111);
 });
 
+createBehavior!("syscallFork", {
+    // This syscall completes in one go, so it doesn't need to be marked
+    // as active.
+
+    setDefaultDisplay!({ display folder = "Syscalls"; });
+
+    // Return the process ID of the child after forking.
+    setValAction!("base.syscall.syscallReturn", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == FORK_SYSCALL_ID) {
+            if (getVal!("base.processManager.inactiveProcesses").length != 0) {
+                getVal!("base.processManager.nextProcessID")
+            } else {
+                -1
+            }
+        } else {
+            syscallReturn
+        }
+    }, 110, true, true);
+
+    // Set up the child when requested.
+    setValAction!("base.processManager.nextProcessStack", {
+        const activeProcessID = getVal!("base.mainLoop.activeProcessID");
+        const activeProcessStack = s_yscall_get_stack(activeProcessID);
+
+        if(activeProcessStack[SYSCALL_STARTING_INDEX] == FORK_SYSCALL_ID && getVal!("base.processManager.inactiveProcesses").length != 0) {
+            // The child receives pid = 0.
+            // Clear the syscall as well (done automatically for the parent).
+            let curStack = activeProcessStack;
+            curStack[SYSCALL_RETURN_POSITION] = 0;
+            curStack[SYSCALL_STARTING_INDEX] = 0;
+
+            curStack
+        } else {
+            nextProcessStack
+        }
+    }, 111);
+});
+
 extendPrefab!("main", {
     useBehaviorPrefab!("syscall");
     useBehaviorPrefab!("syscallPrint");
@@ -409,4 +451,5 @@ extendPrefab!("main", {
     useBehaviorPrefab!("syscallMemDealloc");
     useBehaviorPrefab!("syscallMemWrite");
     useBehaviorPrefab!("syscallReadStdin");
+    useBehaviorPrefab!("syscallFork");
 });

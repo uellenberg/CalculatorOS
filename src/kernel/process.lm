@@ -41,13 +41,19 @@ createBehavior!("processManager", {
         getVal!("hasNextProcess") == 1 && getVal!("nextProcessStack").length != 0
     }, 400, true, true);
 
+    // If we do have a stack and we aren't meant to clear it, then we should
+    // set this to 1.
+    setValAction!("hasNextProcess", {
+        !getVal!("shouldClearProcess") && getVal!("nextProcessStack").length != 0
+    }, 401, true, true);
+
     setValAction!("nextProcessID", {
         if(getVal!("shouldClearProcess")) {
             nextProcessID + 1
         } else {
             nextProcessID
         }
-    }, 401, true, true);
+    }, 402, true, true);
 
     setValAction!("nextProcessStack", {
         if(getVal!("shouldClearProcess")) {
@@ -55,19 +61,7 @@ createBehavior!("processManager", {
         } else {
             nextProcessStack
         }
-    }, 401, true, true);
-
-    // If we do have a stack and we aren't meant to clear it, then we should
-    // set this to 1.
-    setValAction!("hasNextProcess", {
-        if(getVal!("shouldClearProcess")) {
-            0
-        } else if(getVal!("nextProcessStack").length != 0) {
-            1
-        } else {
-            hasNextProcess
-        }
-    }, 401, true, true);
+    }, 402, true, true);
 
     // Now, we'll build lists of active and inactive
     // processes so that the main loop can pick a process
@@ -83,13 +77,13 @@ createBehavior!("processManager", {
         sort(selectBehavior!("process", {
             p_rocess_active(getValSelect!("process.processID"), getValSelect!("process.stack"))
         }, true).filter(id => id != 0))
-    }, 402, true, true);
+    }, 403, true, true);
 
     setValAction!("inactiveProcesses", {
         sort(selectBehavior!("process", {
             p_rocess_inactive(getValSelect!("process.processID"), getValSelect!("process.stack"))
         }, true).filter(id => id != 0))
-    }, 402, true, true);
+    }, 403, true, true);
 
     helper!({
         // Returns 0 if the process isn't active, and the ID if it is.

@@ -10,6 +10,7 @@
 //
 // These steps happen at the following priority levels:
 // - Update clock: 0
+// - Pick active process: 50
 // - Syscall handling: 100
 // - Read last program for syscalls: 200
 // - Execute drivers: 300
@@ -28,6 +29,13 @@ createBehavior!("mainLoop", {
     setItemName!("a_ctive_process_id");
     setVal!("activeProcessID", 1);
 
+    setItemName!("a_ctive_process_random_idx");
+    setVal!("activeProcessRandomIdx", 1);
+
+    setValAction!("activeProcessRandomIdx", {
+        activeProcessRandomIdx + 1
+    }, 50, true, true);
+
     // Run right before process handling happens (it happens at 410).
     setValAction!("activeProcessID", {
         // If we aren't actively handling a syscall, then randomize
@@ -43,9 +51,9 @@ createBehavior!("mainLoop", {
         if(handlingSyscall || activeProcesses.length == 0) {
             activeProcessID
         } else {
-            activeProcesses[floor(random() * activeProcesses.length) + 1]
+            activeProcesses[floor(random(1, getVal!("activeProcessRandomIdx"))[1] * activeProcesses.length) + 1]
         }
-    }, 409, true, true);
+    }, 50, true, true);
 });
 
 extendPrefab!("main", {

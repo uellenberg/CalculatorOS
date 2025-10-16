@@ -1,0 +1,15 @@
+display folder = "Fork Test";
+stackfunction f_ork_test() {
+    stackvar pid;
+    f_ork(&pid);
+
+    if (pid < 0) {
+        p_rint(e_ncode_bytes(stringRaw!("Fail")));
+        return;
+    }
+
+    while (true) {
+        const outputByte = stringRaw!("0123456789")[abs(pid) + 1];
+        p_rint(e_ncode_bytes([outputByte]));
+    }
+}

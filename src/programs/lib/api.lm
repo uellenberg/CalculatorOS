@@ -70,4 +70,18 @@ folder "System API" {
         *r_et = stack[SYSCALL_RETURN_POSITION];
         stack[SYSCALL_RETURN_POSITION] = 0;
     }
+
+    // Forks the current process, returning the child's pid to
+    // the parent and 0 to the child.
+    // On failure, returns -1.
+    // Both processes proceed with the exact same execution state
+    // and memory.
+    // Note that allocated memory is global, and thus accessible by
+    // both processes.
+    stackfunction f_ork(/* & */ r_et) {
+        stack[3] = FORK_SYSCALL_ID;
+
+        *r_et = stack[SYSCALL_RETURN_POSITION];
+        stack[SYSCALL_RETURN_POSITION] = 0;
+    }
 }

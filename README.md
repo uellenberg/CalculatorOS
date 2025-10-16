@@ -102,6 +102,8 @@ A process can perform a system call by setting the first number in its allocated
 
 • 11 — Start process. The first number should be the length (in bytes) of the process' location (as an absolute path), and the subsequent ones will be the the bytes containing that path. The number after this will be a stack pointer. If the process is executed successfully (its file exists), the the new process ID will be placed into the stack pointer. Otherwise, the stack pointer will read -1.
 
+• 13 — Fork. If there is a process available, duplicates the current process' stack and spawns a new process off of it. Returns the new process' ID in the parent, and 0 for the child. If there are no processes available, returns -1.
+
 Syscalls are implemented as actions that update certain pieces of data depending on whether the syscall is requested. This means that the code for syscalls will be spread across multiple different actions.
 
 ## Processes
