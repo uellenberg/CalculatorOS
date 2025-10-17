@@ -28,15 +28,7 @@ stackfunction s_tr_extend_with_float(/* & */ s_tr_ptr, /* & */ s_tr_len, /* & */
     // only if a string already has all but one of its floats fully filled, and the last
     // float is partially filled.
     if(floatLength == trueCapacity) {
-        stackvar oldPtr;
-        oldPtr = *s_tr_ptr;
-
-        m_alloc(trueCapacity + 1, s_tr_ptr);
-        *s_tr_cap = trueCapacity + 1;
-
-        m_em_cpy(oldPtr, *s_tr_ptr, 0, 0, floatLength);
-
-        f_ree(oldPtr, trueCapacity);
+        r_e_alloc(s_tr_ptr, s_tr_cap, floatLength, trueCapacity + 1);
     }
 
     // Next, we need to handle the following three cases:

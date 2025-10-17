@@ -14,3 +14,19 @@ stackfunction m_em_cpy(f_rom_ptr, t_o_ptr, f_rom_off, t_o_off, l_en) {
         i = i + 1;
     }
 }
+
+// Reallocates a memory block to a new capacity, copying over the existing data.
+// If the memory block isn't using the full length, then a smaller value for len
+// may be supplied, and only data up to that length will be copied.
+// Otherwise, len should be equal to the current capacity.
+stackfunction r_e_alloc(/* & */ p_tr, /* & */ c_ap, l_en, n_ew_cap) {
+    stackvar oldPtr;
+    oldPtr = *p_tr;
+
+    m_alloc(n_ew_cap, p_tr);
+
+    m_em_cpy(oldPtr, *p_tr, 0, 0, l_en);
+
+    f_ree(oldPtr, *c_ap);
+    *c_ap = n_ew_cap;
+}
