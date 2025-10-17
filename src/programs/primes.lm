@@ -33,6 +33,7 @@ folder "Primes" {
 
             if (prime != 0) {
                 p_rint_int(prime);
+                f_ree(output, 1);
                 return;
             }
 
