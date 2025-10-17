@@ -66,3 +66,52 @@ stackfunction s_tr_extend_with_float(/* & */ s_tr_ptr, /* & */ s_tr_len, /* & */
 
     *s_tr_len = *s_tr_len + n_um_bytes(d_ata);
 }
+
+// Encodes a BYTES_PER_FLOAT-digit slice of the given number
+// into a byte, starting from the given offset.
+// The length parameter is the number of digits in the entire number.
+// Doesn't work with 0.
+export function e_ncode_int_byte(n_um, o_ff, l_en) {
+    if (o_ff >= l_en) {
+        0
+    } else {
+        stringRaw!("0123456789")[getDigit(n_um, o_ff) + 1]
+    }
+}
+
+// Prints an integer number to the screen.
+stackfunction p_rint_int(n_um) {
+    // Handling zero makes the rest of the algorithm simpler.
+    if(n_um == 0) {
+        p_rint(string!("0")[1]);
+        return;
+    }
+
+    // Also drop negative signs for simplicity.
+    if(n_um < 0) {
+        p_rint(string!("-")[1]);
+    }
+    const num = abs(n_um);
+
+    // Round the length up to the nearest float boundary,
+    // since we print in float-sized chunks.
+    const numLen = ceil(len(num) / BYTES_PER_FLOAT);
+
+    stackvar i;
+    i = 0;
+
+    while(i < numLen) {
+        define!(NUM_OFFSET, 0);
+        const float = e_ncode_bytes(iterate!({
+            const offset = get!(NUM_OFFSET);
+            define!(NUM_OFFSET, NUM_OFFSET + 1);
+
+            // The real length needs to be provided, because
+            // it's used to prevent trailing zeros.
+            e_ncode_int_byte(num, offset + i * BYTES_PER_FLOAT, len(num))
+        }, BYTES_PER_FLOAT, true));
+        p_rint(float);
+
+        i = i + 1;
+    }
+}
