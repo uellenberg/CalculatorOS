@@ -19,6 +19,7 @@ inline const MEMDEALLOC_SYSCALL_ID = 7;
 inline const MEMWRITE_SYSCALL_ID = 6;
 inline const READ_STDIN_SYSCALL_ID = 12;
 inline const FORK_SYSCALL_ID = 13;
+inline const SLEEP_SYSCALL_ID = 14;
 
 createBehavior!("syscall", {
     setDefaultDisplay!({ display folder = "Syscalls"; });
@@ -443,6 +444,8 @@ createBehavior!("syscallFork", {
         }
     }, 111);
 });
+
+// The sleep syscall is handled in process.lm.
 
 extendPrefab!("main", {
     useBehaviorPrefab!("syscall");

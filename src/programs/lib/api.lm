@@ -84,4 +84,11 @@ folder "System API" {
         *r_et = stack[SYSCALL_RETURN_POSITION];
         stack[SYSCALL_RETURN_POSITION] = 0;
     }
+
+    // Puts the process to sleep for the specified duration.
+    // Duration is the number of cycles (kernel loops) to sleep for.
+    stackfunction s_leep(d_uration) {
+        stack[4] = d_uration;
+        stack[3] = SLEEP_SYSCALL_ID;
+    }
 }

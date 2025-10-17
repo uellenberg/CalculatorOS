@@ -104,6 +104,8 @@ A process can perform a system call by setting the first number in its allocated
 
 • 13 — Fork. If there is a process available, duplicates the current process' stack and spawns a new process off of it. Returns the new process' ID in the parent, and 0 for the child. If there are no processes available, returns -1.
 
+• 13 — Sleep. The argument determines how many cycles the process should sleep for (each cycle executes one operation from a random process, assuming one exists and is awake).
+
 Syscalls are implemented as actions that update certain pieces of data depending on whether the syscall is requested. This means that the code for syscalls will be spread across multiple different actions.
 
 ## Processes

@@ -75,7 +75,7 @@ createBehavior!("processManager", {
 
     setValAction!("activeProcesses", {
         sort(selectBehavior!("process", {
-            p_rocess_active(getValSelect!("process.processID"), getValSelect!("process.stack"))
+            p_rocess_active(getValSelect!("process.processID"), getValSelect!("process.stack"), getValSelect!("process.sleep"))
         }, true).filter(id => id != 0))
     }, 403, true, true);
 
@@ -86,13 +86,17 @@ createBehavior!("processManager", {
     }, 403, true, true);
 
     helper!({
+        // There are two helpers here because if a process isn't in the active list,
+        // it just means it might be in a waiting state, but if it's in the inactive list,
+        // it's free to be taken over by a new program.
+
         // Returns 0 if the process isn't active, and the ID if it is.
         display folder = "Process Manager";
-        export function p_rocess_active(p_id, p_stack) {
-            if(p_stack[1] == -1) {
-                0
-            } else {
+        export function p_rocess_active(p_id, p_stack, s_leep) {
+            if(s_leep == 0 && p_stack[1] != -1) {
                 p_id
+            } else {
+                0
             }
         }
 
@@ -124,18 +128,33 @@ createBehavior!("processManager", {
     }, 99);
 });
 
-define!(PROCESS_IDX, 1);
+define!(PROCESS_IDX, 0);
 
 createBehavior!("process", {
-    setDefaultDisplay!({ display folder = "Process (#${get!(PROCESS_IDX)})"; });
+    // This is not an ideal way to handle process idx,
+    // but it's simple enough and works for now.
+    // Every displayed item increments the process idx by 1,
+    // then the real process idx can be figured out by dividing
+    // by the number of displayed items.
+    // The 1 + is used to make process IDs start at 1 instead of 0.
+    setDefaultDisplay!({ display folder = "Process (#${1 + floor(get!(PROCESS_IDX)/3)})"; });
 
+    setItemDisplay!({ define!(PROCESS_IDX, PROCESS_IDX + 1); });
     setVal!("stack", { DEFAULT_PROCESS_STACK });
+
+    // This is used for putting processes to sleep.
+    // To keep things efficient, this needs to be stored
+    // outside of the process stack, which means that it
+    // needs to be updated here, rather than with the other syscall
+    // handlers.
+    setItemDisplay!({ define!(PROCESS_IDX, PROCESS_IDX + 1); });
+    setVal!("sleep", 0);
 
     // Increment the counter here so that it applies to this and the
     // previous item.
     // Because we've incremented it, we need to subtract 1.
     setItemDisplay!({ define!(PROCESS_IDX, PROCESS_IDX + 1); });
-    setVal!("processID", { get!(PROCESS_IDX) - 1 });
+    setVal!("processID", { 1 + floor(get!(PROCESS_IDX)/3) });
 
     // First, we should take over the process mentioned in the process manager
     // if we're the process that's allowed to do so.
@@ -186,6 +205,16 @@ createBehavior!("process", {
             newPID
         } else {
             processID
+        }
+    }, 411, true, true);
+
+    setValAction!("sleep", {
+        // Use the new value given by the syscall, if applicable.
+        // Otherwise, tick the sleep value down.
+        if(getVal!("stack")[SYSCALL_STARTING_INDEX] == SLEEP_SYSCALL_ID) {
+            getVal!("stack")[SYSCALL_STARTING_INDEX + 1]
+        } else {
+            max(0, sleep - 1)
         }
     }, 411, true, true);
 

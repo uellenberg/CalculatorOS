@@ -48,8 +48,10 @@ createBehavior!("mainLoop", {
             selectBehavior!("processManager", { state = getValSelect!("processManager.activeProcesses"); });
         };
 
-        if(handlingSyscall || activeProcesses.length == 0) {
+        if(handlingSyscall) {
             activeProcessID
+        } else if (activeProcesses.length == 0) {
+            0
         } else {
             activeProcesses[floor(random(1, getVal!("activeProcessRandomIdx"))[1] * activeProcesses.length) + 1]
         }
