@@ -55,7 +55,7 @@ createBehavior!("display", {
     }, 501);
 });
 
-define!(ALPHABET, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678<,>.:;\"'{[}]+=_-)(*&^%$#@!~`|\\");
+define!(ALPHABET, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<,>.:;\"'{[}]+=_-)(*&^%$#@!~`|\\");
 
 forEachChar!(ALPHABET, {
     // CHAR becomes the character.
